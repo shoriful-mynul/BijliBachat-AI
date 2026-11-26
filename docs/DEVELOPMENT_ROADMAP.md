@@ -1,6 +1,6 @@
 # Development roadmap
 
-The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 6 are implemented. Parts 7 through 12 are not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
+The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 7 are implemented. Parts 8 through 12 are not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
 
 ## 1. Project foundation and design system — done
 
@@ -47,11 +47,11 @@ The product is built in twelve parts. A later part is not started because a rout
 - Consumption, average daily use, and an explicit billing cycle are calculated in Python. A safe daily allowance and a crossing date are calculated only when their inputs exist.
 - No loaded tariff file contains a verified Cliff Guard threshold. Slab edges are not used as one, so the gauge stays hidden and the page says the threshold needs verification. See [METER_CAPTURE_CLIFF_GUARD.md](METER_CAPTURE_CLIFF_GUARD.md).
 
-## 7. Prediction and budget intelligence — not started
+## 7. Prediction and budget intelligence — done
 
-- An Estimated view of the month if the reading pace continues.
-- No invented accuracy percentage.
-- A household budget is entered by the household or calculated in Python. It is not estimated silently.
+- `POST /api/predictions/consumption` estimates cycle use from at least three checkpoints spanning seven complete days. The pace is exact `Decimal` arithmetic. A shorter history stays unavailable.
+- The household can enter a monthly PKR budget and an optional kWh target. Both stay in this browser, separate from meter checkpoints. The kWh target is not a tariff slab.
+- A payable rupee forecast is unavailable. The loaded files do not contain GST, fuel price adjustment, electricity duty, or a TV fee, and those gaps are not treated as zero. The PKR budget is not compared with a partial tariff. See [PREDICTION_BUDGET_INTELLIGENCE.md](PREDICTION_BUDGET_INTELLIGENCE.md).
 
 ## 8. Appliance action plan and what-if simulator — not started
 
@@ -84,4 +84,4 @@ The product is built in twelve parts. A later part is not started because a rout
 
 ## Still out of scope
 
-Forecasting, budgets, appliance savings, sign-in, notification delivery, and durable meter storage. Meter photos and bill images are read temporarily and are not stored. A payable production bill and a verified Cliff Guard threshold are also still out of scope until a verified file contains them.
+Appliance savings, sign-in, notification delivery, and durable meter storage. Meter photos and bill images are read temporarily and are not stored. A payable production bill and a verified Cliff Guard threshold are also still out of scope until a verified file contains them.

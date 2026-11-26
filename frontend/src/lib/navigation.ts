@@ -4,6 +4,7 @@ import {
   History,
   LayoutDashboard,
   ListChecks,
+  TrendingUp,
   Settings,
   Shield,
   type LucideIcon,
@@ -11,6 +12,7 @@ import {
 
 export type NavHref =
   | "/dashboard"
+  | "/prediction"
   | "/cliff-guard"
   | "/bill-auditor"
   | "/meter-readings"
@@ -63,6 +65,17 @@ export const navigation: readonly NavigationItem[] = [
     mobile: "tab",
     mobileOrder: 1,
     status: "sample",
+  },
+  {
+    href: "/prediction",
+    label: "Forecast",
+    shortLabel: "Forecast",
+    description: "Estimated cycle use from your checkpoints, and a budget you enter yourself.",
+    icon: TrendingUp,
+    group: "understand",
+    mobile: "more",
+    mobileOrder: 0,
+    status: "ready",
   },
   {
     href: "/cliff-guard",
