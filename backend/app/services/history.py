@@ -97,16 +97,25 @@ def validate_cycle(catalog: TariffCatalog, request: CycleValidateRequest) -> Cyc
 
 
 def compare_cycles(catalog: TariffCatalog, request: CycleCompareRequest) -> CycleCompareResponse:
-    earlier = _view_from_input(request.earlier)
-    later = _view_from_input(request.later)
-    if earlier is None or later is None:
-        return _blank_compare(catalog, "One cycle does not have a later ending register and a later timestamp.")
+    earlier_problem = _cycle_problem(request.earlier)
+    later_problem = _cycle_problem(request.later)
+    if earlier_problem or later_problem:
+        return _blank_compare(catalog, earlier_problem or later_problem or "The cycles could not be compared.")
     if request.earlier.id == request.later.id:
         return _blank_compare(catalog, "Choose two different cycles.")
     if not _same_meter(request.earlier.meter_reference, request.later.meter_reference):
         return _blank_compare(catalog, "A comparison is unavailable because the cycles are not from the same meter.")
     if request.earlier.ended_at > request.later.ended_at:
         return _blank_compare(catalog, "The first cycle ends after the second. Choose them in time order.")
+    if _periods_overlap(request.earlier.started_at, request.earlier.ended_at, request.later.started_at, request.later.ended_at):
+        return _blank_compare(
+            catalog,
+            "These periods overlap, so they were not compared as separate cycles. Touching at an endpoint is allowed.",
+        )
+    earlier = _view_from_input(request.earlier)
+    later = _view_from_input(request.later)
+    if earlier is None or later is None:
+        return _blank_compare(catalog, "One cycle does not have a later ending register and a later timestamp.")
     return _comparison(catalog, earlier, later, _exact_actual(request.earlier), _exact_actual(request.later), _elapsed(request.earlier), _elapsed(request.later))
 
 
@@ -457,7 +466,23 @@ def _find(readings, checkpoint_id):
 
 
 def _overlaps(start: datetime, end: datetime, existing: StoredCycleRef) -> bool:
-    return start < existing.ended_at and existing.started_at < end
+    return _periods_overlap(start, end, existing.started_at, existing.ended_at)
+
+
+def _periods_overlap(start: datetime, end: datetime, other_start: datetime, other_end: datetime) -> bool:
+    return start < other_end and other_start < end
+
+
+def _cycle_problem(cycle: CycleInput) -> str | None:
+    if cycle.start_checkpoint_id == cycle.end_checkpoint_id:
+        return "Each cycle needs two different checkpoints."
+    if not _meter_key(cycle.meter_reference):
+        return "A comparison needs a recorded meter on both cycles."
+    if cycle.ended_at <= cycle.started_at:
+        return "Each cycle needs an ending checkpoint later than its start."
+    if cycle.end_register_kwh < cycle.start_register_kwh:
+        return "A cycle whose register fell was not compared. Consumption was not invented."
+    return None
 
 
 def _same_meter(left: str | None, right: str | None) -> bool:

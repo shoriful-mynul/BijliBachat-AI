@@ -50,7 +50,7 @@ export function loadCycles(): StoredCycle[] {
 }
 
 export function saveCycles(cycles: StoredCycle[]): void {
-  window.localStorage.setItem(CYCLE_KEY, JSON.stringify(cycles));
+  globalThis.localStorage.setItem(CYCLE_KEY, JSON.stringify(cycles));
 }
 
 export function loadSnapshots(): StoredSnapshot[] {
@@ -59,7 +59,7 @@ export function loadSnapshots(): StoredSnapshot[] {
 
 export function rememberSnapshot(snapshot: StoredSnapshot): StoredSnapshot[] {
   const next = [...loadSnapshots().filter((item) => item.id !== snapshot.id), snapshot];
-  window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(next));
+  globalThis.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(next));
   return next;
 }
 
@@ -68,18 +68,18 @@ export function loadBaselines(): StoredBaseline[] {
 }
 
 export function saveBaselines(baselines: StoredBaseline[]): void {
-  window.localStorage.setItem(BASELINE_KEY, JSON.stringify(baselines));
+  globalThis.localStorage.setItem(BASELINE_KEY, JSON.stringify(baselines));
 }
 
 function readList<T extends { id?: string; cycle_id?: string }>(key: string, guard: (value: unknown) => value is T): T[] {
   try {
-    const raw = window.localStorage.getItem(key);
+    const raw = globalThis.localStorage.getItem(key);
     if (!raw) {
       return [];
     }
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) {
-      window.localStorage.removeItem(key);
+      globalThis.localStorage.removeItem(key);
       return [];
     }
     const valid = parsed.filter(guard);
@@ -93,11 +93,11 @@ function readList<T extends { id?: string; cycle_id?: string }>(key: string, gua
       return true;
     });
     if (unique.length !== parsed.length) {
-      window.localStorage.setItem(key, JSON.stringify(unique));
+      globalThis.localStorage.setItem(key, JSON.stringify(unique));
     }
     return unique;
   } catch {
-    window.localStorage.removeItem(key);
+    globalThis.localStorage.removeItem(key);
     return [];
   }
 }
@@ -106,8 +106,28 @@ function isCycle(value: unknown): value is StoredCycle {
   if (!isRecord(value)) {
     return false;
   }
-  const started = Date.parse(String(value.started_at));
-  const ended = Date.parse(String(value.ended_at));
+  const started = timestampMicros(String(value.started_at));
+  const ended = timestampMicros(String(value.ended_at));
+  const startRegister = toMilli(String(value.start_register_kwh));
+  const endRegister = toMilli(String(value.end_register_kwh));
+  const actual = toMilli(String(value.actual_kwh));
+  const duration = toMilli(String(value.duration_days));
+  const average = toMilli(String(value.average_daily_kwh));
+  if (
+    started === null ||
+    ended === null ||
+    ended <= started ||
+    startRegister === null ||
+    endRegister === null ||
+    endRegister < startRegister ||
+    actual === null ||
+    duration === null ||
+    average === null
+  ) {
+    return false;
+  }
+  const elapsed = ended - started;
+  const measured = endRegister - startRegister;
   return (
     isUuid(value.id) &&
     typeof value.meter_reference === "string" &&
@@ -115,17 +135,11 @@ function isCycle(value: unknown): value is StoredCycle {
     isUuid(value.start_checkpoint_id) &&
     isUuid(value.end_checkpoint_id) &&
     value.start_checkpoint_id !== value.end_checkpoint_id &&
-    Number.isFinite(started) &&
-    Number.isFinite(ended) &&
-    ended > started &&
-    DECIMAL.test(String(value.start_register_kwh)) &&
-    DECIMAL.test(String(value.end_register_kwh)) &&
-    atLeast(String(value.start_register_kwh), String(value.end_register_kwh)) &&
-    DECIMAL.test(String(value.actual_kwh)) &&
-    DECIMAL.test(String(value.duration_days)) &&
-    DECIMAL.test(String(value.average_daily_kwh)) &&
     value.trust_status === "Calculated" &&
-    typeof value.detail === "string"
+    typeof value.detail === "string" &&
+    actual === measured &&
+    duration === roundHalfUp(elapsed, BigInt(86400000)) &&
+    average === roundHalfUp(measured * BigInt("86400000000"), elapsed)
   );
 }
 
@@ -133,21 +147,29 @@ function isSnapshot(value: unknown): value is StoredSnapshot {
   if (!isRecord(value)) {
     return false;
   }
+  const readingIds = value.reading_ids;
+  const startRegister = toMilli(String(value.cycle_start_register_kwh));
+  const latestRegister = toMilli(String(value.latest_register_kwh));
+  const projected = toMilli(String(value.projected_cycle_kwh));
   return (
     isUuid(value.id) &&
     (value.meter_reference === null || (typeof value.meter_reference === "string" && METER.test(value.meter_reference))) &&
-    Number.isFinite(Date.parse(String(value.created_at))) &&
-    /^\d{4}-\d{2}-\d{2}$/.test(String(value.cycle_started_on)) &&
-    /^\d{4}-\d{2}-\d{2}$/.test(String(value.cycle_ends_on)) &&
+    timestampMicros(String(value.created_at)) !== null &&
+    isCalendarDate(String(value.cycle_started_on)) &&
+    isCalendarDate(String(value.cycle_ends_on)) &&
     String(value.cycle_ends_on) >= String(value.cycle_started_on) &&
-    DECIMAL.test(String(value.cycle_start_register_kwh)) &&
-    DECIMAL.test(String(value.latest_register_kwh)) &&
+    startRegister !== null &&
+    latestRegister !== null &&
+    latestRegister >= startRegister &&
+    projected !== null &&
     isUuid(value.latest_checkpoint_id) &&
-    DECIMAL.test(String(value.projected_cycle_kwh)) &&
-    Array.isArray(value.reading_ids) &&
-    value.reading_ids.length > 0 &&
-    value.reading_ids.every(isUuid) &&
+    Array.isArray(readingIds) &&
+    readingIds.length > 0 &&
+    readingIds.every(isUuid) &&
+    new Set(readingIds).size === readingIds.length &&
+    readingIds.includes(value.latest_checkpoint_id) &&
     Array.isArray(value.assumptions) &&
+    value.assumptions.every((item) => typeof item === "string") &&
     value.trust_status === "Estimated" &&
     value.method === "checkpoint-pace-v1" &&
     typeof value.detail === "string"
@@ -169,10 +191,88 @@ function isUuid(value: unknown): value is string {
   return typeof value === "string" && UUID.test(value);
 }
 
-function atLeast(left: string, right: string): boolean {
-  const pad = (value: string) => {
-    const [whole, fraction = ""] = value.split(".");
-    return whole.padStart(12, "0") + fraction.padEnd(3, "0");
-  };
-  return pad(right) >= pad(left);
+const TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/;
+const CALENDAR_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+function isCalendarDate(value: string): boolean {
+  const match = CALENDAR_DATE.exec(value);
+  if (!match) {
+    return false;
+  }
+  return isRealDate(Number(match[1]), Number(match[2]), Number(match[3]));
+}
+
+function timestampMicros(value: string): bigint | null {
+  const match = TIMESTAMP.exec(value);
+  if (!match) {
+    return null;
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  const second = Number(match[6]);
+  if (!isRealDate(year, month, day) || hour > 23 || minute > 59 || second > 59) {
+    return null;
+  }
+  const fraction = (match[7] ?? ".").slice(1).padEnd(6, "0");
+  let utc =
+    BigInt(daysFromCivil(year, month, day)) * BigInt("86400000000") +
+    BigInt(hour) * BigInt("3600000000") +
+    BigInt(minute) * BigInt("60000000") +
+    BigInt(second) * BigInt("1000000") +
+    BigInt(fraction);
+  const zone = match[8];
+  if (zone !== "Z") {
+    const sign = zone.startsWith("-") ? BigInt(-1) : BigInt(1);
+    const zoneHour = Number(zone.slice(1, 3));
+    const zoneMinute = Number(zone.slice(4, 6));
+    if (zoneHour > 23 || zoneMinute > 59) {
+      return null;
+    }
+    utc -= sign * (BigInt(zoneHour) * BigInt("3600000000") + BigInt(zoneMinute) * BigInt("60000000"));
+  }
+  return utc;
+}
+
+function isRealDate(year: number, month: number, day: number): boolean {
+  if (month < 1 || month > 12 || day < 1) {
+    return false;
+  }
+  const lengths = [0, 31, leapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return day <= lengths[month];
+}
+
+function leapYear(year: number): boolean {
+  return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+}
+
+function daysFromCivil(year: number, month: number, day: number): number {
+  let normalizedYear = year;
+  if (month <= 2) {
+    normalizedYear -= 1;
+  }
+  const era = Math.floor(normalizedYear / 400);
+  const yearOfEra = normalizedYear - era * 400;
+  const dayOfYear = Math.floor((153 * (month > 2 ? month - 3 : month + 9) + 2) / 5) + day - 1;
+  const dayOfEra = yearOfEra * 365 + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100) + dayOfYear;
+  return era * 146097 + dayOfEra - 719468;
+}
+
+function toMilli(value: string): bigint | null {
+  if (!DECIMAL.test(value)) {
+    return null;
+  }
+  const [whole, fraction = ""] = value.split(".");
+  return BigInt(whole) * BigInt(1000) + BigInt((fraction + "000").slice(0, 3));
+}
+
+function roundHalfUp(numerator: bigint, denominator: bigint): bigint {
+  const quotient = numerator / denominator;
+  const remainder = numerator % denominator;
+  if (remainder * BigInt(2) >= denominator) {
+    return quotient + BigInt(1);
+  }
+  return quotient;
 }
