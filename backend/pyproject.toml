@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bijlibachat-backend"
 version = "0.1.0"
-description = "BijliBachat AI API. Tariff calculations are not implemented in this version."
+description = "BijliBachat AI API. Data contracts are defined. Tariff calculations are not implemented."
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<1",
@@ -16,6 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  # Starlette's TestClient imports httpx2. Plain httpx still runs, and Starlette warns that it is deprecated for this client.
   "httpx2>=2,<3",
   "pytest>=8,<10",
 ]

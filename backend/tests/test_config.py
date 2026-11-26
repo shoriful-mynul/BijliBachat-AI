@@ -30,3 +30,17 @@ def test_default_cors_allows_local_dev_hosts() -> None:
 def test_settings_reject_unknown_environment() -> None:
     with pytest.raises(ValidationError):
         Settings(app_env="staging")
+
+
+def test_settings_reject_wildcard_origin() -> None:
+    with pytest.raises(ValidationError, match="wildcard"):
+        Settings(cors_origins="*")
+
+
+def test_settings_do_not_require_secrets() -> None:
+    settings = Settings(app_env="test")
+
+    assert set(Settings.model_fields) == {"app_env", "service_name", "cors_origins"}
+    assert settings.app_env == "test"
+    assert "secret" not in settings.model_dump()
+    assert "key" not in settings.model_dump()

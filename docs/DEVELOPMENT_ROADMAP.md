@@ -1,85 +1,85 @@
 # Development roadmap
 
-Stages are sequential. A later stage is not started by the existence of a route or a placeholder sentence. Only stage 1 is implemented.
+The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1, 2, and 3 are implemented. Parts 4 through 12 are not.
 
-## Stage 1 — Foundation (this version)
+## 1. Project foundation and design system — done
 
-- Monorepo layout, Next.js frontend, FastAPI backend.
+- Monorepo layout, Next.js frontend, and the FastAPI application factory.
 - Blue Hour design system, dark and light themes, and the component set.
-- Application shell and the sample Overview at `/dashboard`. `/` redirects there. Other sections are reachable placeholders. A route does not mean that section is built.
-- Process health endpoint, explicit CORS, and backend tests.
-- Engineering rules for tariff authority, trust labels, and demo data.
+- Sample Overview at `/dashboard`, with figures marked as demo data.
+- Process health, explicit CORS, and the rule that Python owns tariff and money calculations.
 
-## Stage 2 — Verified tariff configuration
+## 2. Frontend application shell and navigation — done
 
-- Dated tariff files checked into the backend, with the distribution company, effective dates, and slabs written as data.
+- Shared shell: grouped sidebar, header, and phone navigation.
+- `/` redirects to `/dashboard`.
+- Cliff Guard, Bill Auditor, Meter Readings, Action Plan, Consumption History, and Settings are reachable. Settings can change the theme on this device. The other screens say the work is not available yet.
+
+## 3. Backend foundation and data architecture — done
+
+- Household, meter checkpoint, trust status, decimal amount, and error contracts.
+- Timestamps are timezone-aware and stored as UTC. Amounts use `Decimal`, serialized as strings.
+- Unexpected server errors return `ErrorResponse` without the exception text. Field validation stays FastAPI's `detail` list.
+- Health and CORS behavior are unchanged. Tests do not need production secrets.
+- Firebase, Firestore, Storage, and Gemini have a documented home for later. They are not connected, and no repository returns invented household data.
+
+## 4. Versioned tariff engine — not started
+
+- Dated tariff files, with the distribution company, effective dates, and slabs written as data.
 - No universal unit cutoff in code.
-- The API refuses to answer a slab question when the file for that company and date is missing.
-- The interface keeps showing Unavailable and Needs verification until a file is actually loaded.
+- The API refuses a slab question when the file for that company and date is missing.
+- The interface keeps showing Unavailable and Needs verification until a file is loaded.
+- Protected or non-protected status comes from that file, not from a hardcoded rule.
 
-## Stage 3 — Calculation engine
+## 5. Bill auditor and OCR — not started
 
-- Python computes units for a cycle and the rupee amount from the verified file.
-- Responses carry Calculated, and the inputs they used.
-- The frontend stops using sample rupee amounts once a real result exists, and it still does not recompute them.
-
-## Stage 4 — Household and manual checkpoints
-
-- A household profile and manually submitted meter readings.
-- Copy and data model keep checkpoints distinct from live monitoring.
-- Validation of dates, register values, and duplicates.
-
-## Stage 5 — Bill and meter capture
-
-- Upload to storage.
-- Gemini Vision for OCR and structured extraction only.
-- Uncertain fields require a person to confirm them before they are stored as Extracted.
-
-## Stage 6 — Bill auditor
-
+- Upload a bill and use Gemini for OCR and structured extraction only.
+- Uncertain fields stay unconfirmed until a person accepts them.
 - Compare a confirmed bill with the Python result for the same cycle.
-- Disagreements are labeled "Possible mismatch", with the fields that differ.
-- No fraud wording, and no automatic accusation.
+- Disagreements are labeled "Possible mismatch". The word "fraud" is not used.
 
-## Stage 7 — Cliff Guard
+## 6. Meter capture and Cliff Guard — not started
 
-- Show distance to the next verified slab only after stage 2 and stage 3 exist.
-- Protected or non-protected status comes from the dated file, not from a hardcoded rule.
-- The gauge may use a restrained glow only when it represents that verified position.
+- Manual checkpoints and photo checkpoints, stored as checkpoints rather than a live feed.
+- A photo extraction stays `pending_confirmation` until a person accepts it.
+- Register-order and spike checks belong here, not in the current contract.
+- Cliff Guard shows distance to the next verified slab only after the tariff engine exists.
 
-## Stage 8 — Forecasting
+## 7. Prediction and budget intelligence — not started
 
-- A clearly Estimated view of the month if the reading pace continues.
+- An Estimated view of the month if the reading pace continues.
 - No invented accuracy percentage.
-- Any forecast line that uses glow must be a real estimate, labeled as such.
+- A household budget is entered by the household or calculated in Python. It is not estimated silently.
 
-## Stage 9 — Action plan
+## 8. Appliance action plan and what-if simulator — not started
 
-- Practical actions whose rupee effect, if shown, is calculated in Python from stated assumptions.
-- Sample savings copy on the overview is replaced or clearly retired once real calculations exist.
+- Practical actions whose rupee effect, when shown, is calculated in Python from stated assumptions.
+- Sample savings copy on the overview is replaced or clearly retired once a real calculation exists.
 
-## Stage 10 — History and budget
+## 9. History, insights, and savings measurement — not started
 
-- Stored cycles, a household budget, and a comparison against that budget.
-- Budgets are user-entered or calculated in Python. They are not estimated silently.
+- Stored cycles and a comparison of actual use with an estimate.
+- Savings figures come from Python. The interface does not invent them.
 
-## Stage 11 — Accounts and persistence
+## 10. Localization and accessibility — not started
+
+- Urdu and English copy, including the Noto Nastaliq face already loaded for later Urdu text.
+- The shell's current contrast, focus, and 48px targets stay in place while language support is added.
+
+## 11. Integration, security, and testing — not started
 
 - Firebase Authentication.
-- Cloud Firestore for household data.
+- Cloud Firestore for household data, behind the repository boundary.
 - Firebase Storage for bill and meter photos.
-- Secrets stay on the server or in the platform's secret store, never in the frontend bundle.
+- Secrets stay on the server or in the platform secret store, never in the frontend bundle.
+- Broader security tests around those connections. The current tests cover contracts, health, and CORS only.
 
-## Stage 12 — Notifications
-
-- Real delivery of reminders the household asked for.
-- The header bell stays an honest empty state until then.
-
-## Stage 13 — Deployment
+## 12. Deployment and hackathon presentation — not started
 
 - Production configuration, locked CORS origins, and a hosted frontend and API.
-- No change to the rule that an unverified tariff is not shown as fact.
+- An unverified tariff is still not shown as fact.
+- Real notification delivery, if the presentation needs it, is a separate decision. The header bell stays an honest empty state until then.
 
-## Out of scope until a stage asks for it
+## Still out of scope
 
-Firebase, Gemini, OCR, tariff maths, protected-consumer classification, forecasting, Cliff Guard business rules, budgets, appliance savings, and notification delivery.
+Tariff maths, bill calculation, OCR, meter persistence, Cliff Guard rules, forecasting, budgets, appliance savings, sign-in, and notification delivery.
