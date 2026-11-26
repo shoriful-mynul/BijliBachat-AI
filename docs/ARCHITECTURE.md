@@ -6,13 +6,14 @@ BijliBachat AI is a two-part application in one repository. The browser presents
 
 The frontend is a Next.js App Router application in `frontend/`.
 
-- `src/app` defines routes. `/` redirects to `/dashboard`. Overview is a complete sample screen. Bill Auditor uploads a bill, reviews an extraction, and shows an audit. Settings can change the theme on this device. Cliff Guard, Meter Readings, Action Plan, and History explain what they will do and state that the work is not available yet.
+- `src/app` defines routes. `/` redirects to `/dashboard`. Overview keeps its labeled sample cards and adds a forecast summary from checkpoints on this device. Bill Auditor, Cliff Guard, Meter Readings, and Forecast are implemented. Settings can change the theme on this device. Action Plan and History say that work is not available yet.
 - `src/lib/navigation.ts` is the only route list. The desktop sidebar, mobile tabs, and More sheet read it. Journey groups are Understand, Prevent, Optimize, and Measure. Settings stays with the sample profile, not inside those groups.
 - `src/components/ui` is a small local component set. There is no third-party component kit.
 - `src/components/layout` is the shared shell: sidebar, header, mobile navigation, page container, and the API status line. Pages do not repeat the shell. The sidebar can collapse to icons. That choice is stored on this device, the same way as the theme.
 - `src/features/overview/demo-data.ts` holds the sample figures. Components render those authored values. They do not derive a bill, a slab, or a saving.
 - `src/features/bill-auditor/` is the review screen. It sends files and confirmed values to the API. It does not calculate a tariff.
 - `src/features/meter/` records checkpoints and shows Cliff Guard. Confirmed readings stay in this browser. The pages do not calculate consumption.
+- `src/features/prediction/` asks the API for a cycle forecast and keeps a household budget in this browser. It does not price a bill.
 - A short consistency check in that file fails the build if the authored unit total and the daily series drift apart. That check is a content guard, not a billing engine.
 
 The root layout stays statically renderable. Theme preference and the collapsed sidebar are applied by small inline scripts that read `localStorage` before paint, then by client controls. The server does not read those choices, so the layout does not depend on the request.
@@ -31,7 +32,7 @@ The backend is a FastAPI application in `backend/`. `create_app()` builds the pr
 - `app/core/` holds environment settings, including the optional Gemini key and model.
 - `app/schemas/` holds the contracts: health, household profile, meter checkpoint, trust status, decimal amounts, tariff requests and responses, bill extraction and audit, and `ErrorResponse`.
 - `app/tariffs/` holds dated JSON schedules, the availability notes for schedules that are not loaded, and the loader that rejects overlap, invalid bands, and synthetic production files.
-- `app/services/` holds application logic. The health report, `tariff_engine.py`, bill checks, meter validation, and Cliff Guard live here. The engine does not import a database client.
+- `app/services/` holds application logic. The health report, `tariff_engine.py`, bill checks, meter validation, Cliff Guard, and the consumption forecast live here. The engine does not import a database client.
 - `app/repositories/meter_ledger.py` is the storage boundary. The API uses a ledger that retains nothing.
 - `app/integrations/gemini/` calls the Gemini SDK for bill documents and meter photos. Tests replace that client. Nothing else imports it to calculate money.
 - `tests/` covers health, CORS, settings, the data contracts, tariff files, tariff calculations, and bill extraction with a fake Gemini client. Synthetic rates live in the tests and are labeled as fixtures.
