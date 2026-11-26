@@ -118,8 +118,9 @@ If `NEXT_PUBLIC_API_URL` is missing, the interface says the API address is not c
 Done in this version:
 
 - Blue Hour design tokens, dark and light themes, and the font setup.
-- Application shell with desktop sidebar, header, and a mobile tab bar.
+- Application shell with a grouped desktop sidebar, a compact header, and a mobile tab bar. `/` redirects to `/dashboard`.
 - Overview dashboard built from labeled sample data.
+- Placeholder pages for Cliff Guard, Bill Auditor, Meter Readings, Action Plan, and Consumption History. They describe the later work and do not show figures.
 - Reusable interface components, including trust and risk indicators.
 - FastAPI process health, environment-based CORS, and tests.
 

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { History } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
+import { FeaturePlaceholder } from "@/components/layout/feature-placeholder";
 import { navigationItem } from "@/lib/navigation";
 
 const page = navigationItem("/history");
@@ -11,11 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function HistoryPage() {
-  return (
-    <EmptyState
-      icon={History}
-      title="History is not available yet"
-      description="Earlier billing cycles will appear here after readings are stored. Nothing is stored in this version."
-    />
-  );
+  return <FeaturePlaceholder item={page} />;
 }

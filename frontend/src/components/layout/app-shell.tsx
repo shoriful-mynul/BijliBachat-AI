@@ -1,10 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { MobileNav } from "@/components/layout/mobile-nav";
+import { AppHeader } from "@/components/layout/app-header";
+import { AppSidebar } from "@/components/layout/app-sidebar";
+import { MobileNavigation } from "@/components/layout/mobile-navigation";
+import { PageContainer } from "@/components/layout/page-container";
 import { ServiceStatus } from "@/components/layout/service-status";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -15,17 +16,17 @@ export function AppShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <Sidebar />
+      <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar />
+        <AppHeader />
         <main id="main" className="flex-1 px-4 py-5 pb-28 md:px-8 md:py-8 md:pb-8">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
+          <PageContainer>
             {children}
             <ServiceStatus />
-          </div>
+          </PageContainer>
         </main>
       </div>
-      <MobileNav />
+      <MobileNavigation />
     </div>
   );
 }

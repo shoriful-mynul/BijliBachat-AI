@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 export type NavHref =
-  | "/"
+  | "/dashboard"
   | "/cliff-guard"
   | "/bill-auditor"
   | "/meter-readings"
@@ -18,79 +18,138 @@ export type NavHref =
   | "/history"
   | "/settings";
 
-export type NavigationItem = {
+export type NavGroupId = "understand" | "prevent" | "optimize" | "measure";
+
+type BaseNavigationItem = {
   href: NavHref;
   label: string;
   shortLabel: string;
   description: string;
   icon: LucideIcon;
+  group: NavGroupId | "account";
   mobile: "tab" | "more";
+  mobileOrder: number;
 };
 
+export type PlaceholderNavigationItem = BaseNavigationItem & {
+  status: "placeholder";
+  purpose: string;
+  later: string;
+};
+
+export type NavigationItem =
+  | (BaseNavigationItem & { status: "sample" | "settings" })
+  | PlaceholderNavigationItem;
+
+export const navigationGroups: readonly { id: NavGroupId; label: string }[] = [
+  { id: "understand", label: "Understand" },
+  { id: "prevent", label: "Prevent" },
+  { id: "optimize", label: "Optimize" },
+  { id: "measure", label: "Measure" },
+];
+
+/**
+ * Single route list for the shell. Desktop groups, the mobile tab bar,
+ * and the More sheet all read this array.
+ */
 export const navigation: readonly NavigationItem[] = [
   {
-    href: "/",
+    href: "/dashboard",
     label: "Overview",
     shortLabel: "Overview",
-    description: "Sample household position for the illustrated November cycle.",
+    description: "A sample look at one household cycle. The figures are labeled demo data.",
     icon: LayoutDashboard,
+    group: "understand",
     mobile: "tab",
+    mobileOrder: 1,
+    status: "sample",
   },
   {
     href: "/cliff-guard",
     label: "Cliff Guard",
     shortLabel: "Cliff",
-    description: "Slab protection once a verified tariff file is loaded.",
+    description: "A later check against a verified tariff. Nothing is being watched yet.",
     icon: Shield,
+    group: "prevent",
     mobile: "tab",
-  },
-  {
-    href: "/meter-readings",
-    label: "Meter Readings",
-    shortLabel: "Readings",
-    description: "Manual checkpoints submitted by the household. Not a live feed.",
-    icon: Gauge,
-    mobile: "tab",
-  },
-  {
-    href: "/action-plan",
-    label: "Action Plan",
-    shortLabel: "Plan",
-    description: "Household actions. A saved plan is not available yet.",
-    icon: ListChecks,
-    mobile: "tab",
+    mobileOrder: 2,
+    status: "placeholder",
+    purpose:
+      "Households will be able to watch the current cycle against a tariff threshold that has been checked and dated.",
+    later:
+      "No threshold is shown, because none is loaded. Protected-consumer status is not assumed. This page is not a live warning.",
   },
   {
     href: "/bill-auditor",
     label: "Bill Auditor",
     shortLabel: "Auditor",
-    description: "Bill comparison is not available yet. No bill is judged here.",
+    description: "Upload and review a bill later. This version does not read bills.",
     icon: FileSearch,
+    group: "prevent",
     mobile: "more",
+    mobileOrder: 1,
+    status: "placeholder",
+    purpose:
+      "You will be able to upload a bill, review what was read from it, and see if something does not match the household record.",
+    later:
+      "This version does not read bills. If a difference is found later, it is called a possible mismatch. Nothing here judges a bill.",
+  },
+  {
+    href: "/action-plan",
+    label: "Action Plan",
+    shortLabel: "Plan",
+    description: "Appliance ideas for this home, once recommendations exist.",
+    icon: ListChecks,
+    group: "optimize",
+    mobile: "tab",
+    mobileOrder: 4,
+    status: "placeholder",
+    purpose:
+      "You will be able to see appliance ideas for this home and try simple what-if scenarios.",
+    later: "No rupee effect is shown. Savings are not calculated in this version.",
+  },
+  {
+    href: "/meter-readings",
+    label: "Meter Readings",
+    shortLabel: "Readings",
+    description: "Manual and photo checkpoints later. This is not a live meter.",
+    icon: Gauge,
+    group: "measure",
+    mobile: "tab",
+    mobileOrder: 3,
+    status: "placeholder",
+    purpose:
+      "You will be able to type a meter reading, or confirm one from a photo of the meter.",
+    later:
+      "These are checkpoints, not a live feed. Nothing is stored in this version. The overview includes one labeled sample checkpoint only.",
   },
   {
     href: "/history",
-    label: "History",
+    label: "Consumption History",
     shortLabel: "History",
-    description: "Earlier cycles will appear here once readings are stored.",
+    description: "Month-by-month comparison later. Nothing is stored yet.",
     icon: History,
+    group: "measure",
     mobile: "more",
+    mobileOrder: 2,
+    status: "placeholder",
+    purpose: "You will be able to compare months and see actual use next to an estimate.",
+    later: "Nothing is stored yet, so there is no history to show.",
   },
   {
     href: "/settings",
     label: "Settings",
     shortLabel: "Settings",
-    description: "Appearance stays on this device. Household settings are not saved yet.",
+    description: "Theme on this device. Other choices are not saved yet.",
     icon: Settings,
+    group: "account",
     mobile: "more",
+    mobileOrder: 3,
+    status: "settings",
   },
 ];
 
 export function isNavActive(pathname: string, href: NavHref): boolean {
-  if (href === "/") {
-    return pathname === "/";
-  }
-
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -104,4 +163,22 @@ export function navigationItem(href: NavHref): NavigationItem {
 
 export function currentNavigationItem(pathname: string): NavigationItem | null {
   return navigation.find((item) => isNavActive(pathname, item.href)) ?? null;
+}
+
+export function navigationInGroup(group: NavGroupId): NavigationItem[] {
+  return navigation.filter((item) => item.group === group);
+}
+
+export function mobileTabs(): NavigationItem[] {
+  return navigation
+    .filter((item) => item.mobile === "tab")
+    .slice()
+    .sort((left, right) => left.mobileOrder - right.mobileOrder);
+}
+
+export function mobileMore(): NavigationItem[] {
+  return navigation
+    .filter((item) => item.mobile === "more")
+    .slice()
+    .sort((left, right) => left.mobileOrder - right.mobileOrder);
 }

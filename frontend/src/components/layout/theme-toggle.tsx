@@ -10,7 +10,8 @@ export function ThemeToggle() {
     <button
       type="button"
       className="grid h-12 w-12 place-items-center rounded-xl hover:bg-raised"
-      aria-label="Toggle color theme"
+      aria-label="Switch color theme"
+      title="Switch color theme"
       onClick={() => {
         const current =
           document.documentElement.dataset.theme === "light" ? "light" : "dark";

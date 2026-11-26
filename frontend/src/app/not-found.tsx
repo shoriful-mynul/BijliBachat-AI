@@ -9,7 +9,7 @@ export default function NotFound() {
       title="This page is not part of BijliBachat"
       description="The address does not match a section of the app. Overview is the place to start."
       action={
-        <Button href="/" variant="primary">
+        <Button href="/dashboard" variant="primary">
           Back to overview
         </Button>
       }
