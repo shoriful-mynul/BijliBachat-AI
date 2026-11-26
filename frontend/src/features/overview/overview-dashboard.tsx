@@ -1,4 +1,5 @@
 import { CliffGuardPreview } from "@/components/dashboard/cliff-guard-preview";
+import { HistorySummary } from "@/features/history/history-summary";
 import { PredictionSummary } from "@/features/prediction/prediction-summary";
 import { ConsumptionSummary } from "@/components/dashboard/consumption-summary";
 import { EstimatedBillCard } from "@/components/dashboard/estimated-bill-card";
@@ -11,6 +12,7 @@ export function OverviewDashboard() {
     <div className="flex flex-col gap-5">
       <WelcomeSection />
       <PredictionSummary />
+      <HistorySummary />
       <p className="text-sm leading-6 text-muted">
         The cards below are the labeled sample overview. They are not calculated from your checkpoints.
       </p>

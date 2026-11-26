@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getApiBaseUrl } from "@/lib/health";
 import type { DataTrustStatus } from "@/types/trust";
+import { rememberSnapshot } from "@/features/history/store";
+import type { ForecastSnapshotResult } from "@/features/history/types";
 import { loadReadings, type StoredReading } from "@/features/meter/ledger";
 import { ForecastChart } from "./forecast-chart";
 import { clearBudget, loadBudget, loadCycle, saveBudget, saveCycle, type StoredBudget, type StoredCycle } from "./stores";
@@ -27,6 +29,7 @@ export function PredictionView() {
   const [budgetNote, setBudgetNote] = useState<string | null>(null);
   const [report, setReport] = useState<ForecastReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [snapshotNote, setSnapshotNote] = useState<string | null>(null);
 
   useEffect(() => {
     const storedReadings = loadReadings();
@@ -54,26 +57,11 @@ export function PredictionView() {
       return;
     }
     const controller = new AbortController();
-    const selected = readings.filter((item) => (item.meter_reference ?? "") === cycle.meter_reference);
     fetch(`${apiBase}/api/predictions/consumption`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
-      body: JSON.stringify({
-        as_of: new Date().toISOString(),
-        meter_reference: cycle.meter_reference || null,
-        readings: selected.map(toPrior),
-        cycle_started_on: cycle.cycle_started_on || null,
-        cycle_ends_on: cycle.cycle_ends_on || null,
-        cycle_start_register_kwh: cycle.cycle_start_register_kwh.trim() || null,
-        monthly_budget_pkr: budget?.monthly_budget_pkr ?? null,
-        monthly_kwh_target: budget?.monthly_kwh_target ?? null,
-        provider_code: cycle.provider_code.trim() || null,
-        consumer_category: cycle.provider_code.trim() ? "residential" : null,
-        tariff_type: cycle.tariff_type || null,
-        eligibility: cycle.eligibility || null,
-        billing_date: cycle.provider_code.trim() && cycle.tariff_type ? new Date().toISOString().slice(0, 10) : null,
-      }),
+      body: JSON.stringify(forecastPayload(readings, cycle, budget)),
     })
       .then(async (response) => {
         if (!response.ok) {
@@ -117,6 +105,29 @@ export function PredictionView() {
     saveBudget(next);
     setBudget(next);
     setBudgetNote(validated.limitation);
+  }
+
+  async function saveSnapshot() {
+    if (!apiBase || report?.forecast_status !== "estimated") {
+      setSnapshotNote("A snapshot is saved only when the forecast is available.");
+      return;
+    }
+    const response = await fetch(`${apiBase}/api/history/forecast-snapshots`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...forecastPayload(readings, cycle, budget), snapshot_id: crypto.randomUUID() }),
+    });
+    if (!response.ok) {
+      setSnapshotNote(await readError(response));
+      return;
+    }
+    const saved = (await response.json()) as ForecastSnapshotResult;
+    if (saved.status !== "estimated" || !saved.snapshot) {
+      setSnapshotNote(saved.detail);
+      return;
+    }
+    rememberSnapshot(saved.snapshot);
+    setSnapshotNote("Saved on this device. The forecast itself was not changed.");
   }
 
   function removeBudget() {
@@ -180,6 +191,12 @@ export function PredictionView() {
         ) : (
           <p className="mt-4 text-sm leading-6">No chart is shown until a forecast can be calculated from real checkpoints. Missing days are not filled in.</p>
         )}
+        {report?.forecast_status === "estimated" ? (
+          <div className="mt-4">
+            <Button type="button" variant="secondary" onClick={() => void saveSnapshot()}>Save this forecast on this device</Button>
+            {snapshotNote ? <p className="mt-2 text-sm leading-6">{snapshotNote}</p> : null}
+          </div>
+        ) : null}
       </Card>
 
       <Card as="section" aria-labelledby="cycle-heading">
@@ -298,6 +315,25 @@ function chip(status: string): DataTrustStatus {
     return key;
   }
   return "unavailable";
+}
+
+function forecastPayload(readings: StoredReading[], cycle: StoredCycle, budget: StoredBudget | null) {
+  const selected = readings.filter((item) => (item.meter_reference ?? "") === cycle.meter_reference);
+  return {
+    as_of: new Date().toISOString(),
+    meter_reference: cycle.meter_reference || null,
+    readings: selected.map(toPrior),
+    cycle_started_on: cycle.cycle_started_on || null,
+    cycle_ends_on: cycle.cycle_ends_on || null,
+    cycle_start_register_kwh: cycle.cycle_start_register_kwh.trim() || null,
+    monthly_budget_pkr: budget?.monthly_budget_pkr ?? null,
+    monthly_kwh_target: budget?.monthly_kwh_target ?? null,
+    provider_code: cycle.provider_code.trim() || null,
+    consumer_category: cycle.provider_code.trim() ? "residential" : null,
+    tariff_type: cycle.tariff_type || null,
+    eligibility: cycle.eligibility || null,
+    billing_date: cycle.provider_code.trim() && cycle.tariff_type ? new Date().toISOString().slice(0, 10) : null,
+  };
 }
 
 function toPrior(reading: StoredReading) {

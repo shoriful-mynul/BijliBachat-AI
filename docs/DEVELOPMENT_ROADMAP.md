@@ -1,6 +1,6 @@
 # Development roadmap
 
-The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 8 are implemented. Parts 9 through 12 are not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
+The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 9 are implemented. Parts 10 through 12 are not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
 
 ## 1. Project foundation and design system — done
 
@@ -59,10 +59,11 @@ The product is built in twelve parts. A later part is not started because a rout
 - Actions are created only from a change the household entered. No wattage or rupee saving is invented.
 - PKR savings stay unavailable because the loaded tariffs omit GST, fuel price adjustment, electricity duty, and the TV fee. The overview sample saving remains labeled demo data and links to the action plan. See [APPLIANCE_ACTION_PLAN.md](APPLIANCE_ACTION_PLAN.md).
 
-## 9. History, insights, and savings measurement — not started
+## 9. History, insights, and savings measurement — done
 
-- Stored cycles and a comparison of actual use with an estimate.
-- Savings figures come from Python. The interface does not invent them.
+- Confirmed checkpoints can be grouped into a cycle. Actual use is the register difference. Two cycles from the same meter can be compared, with a warning when their lengths differ.
+- A forecast snapshot is copied only when the existing forecast is estimated. The comparison with measured use does not change that forecast and is not an accuracy score.
+- A kWh target is a figure the household entered for one cycle. PKR savings stay unavailable. See [HISTORY_INSIGHTS_SAVINGS.md](HISTORY_INSIGHTS_SAVINGS.md).
 
 ## 10. Localization and accessibility — not started
 
