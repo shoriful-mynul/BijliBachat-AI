@@ -26,13 +26,15 @@ class FakeTokenVerifier:
         self,
         tokens: dict[str, AuthenticatedUser],
         expired: set[str] | None = None,
+        revoked: set[str] | None = None,
     ) -> None:
         self._tokens = tokens
         self._expired = expired or set()
+        self._revoked = revoked or set()
         self.deleted: set[str] = set()
 
     def verify(self, token: str) -> AuthenticatedUser:
-        if token in self._expired:
+        if token in self._expired or token in self._revoked:
             raise ExpiredIdentity()
         user = self._tokens.get(token)
         if user is None:

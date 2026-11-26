@@ -543,6 +543,11 @@ export const en = {
   "account.cycles": "History cycles",
   "account.snapshots": "Forecast snapshots",
   "account.baselines": "kWh targets",
+  "account.resetTitle": "Reset this browser",
+  "account.resetBody": "This removes meter checkpoints, appliances, forecasts, and history saved in this browser. The sample overview stays labeled demo data. An account copy is not removed, and nothing is sent as a successful cloud save.",
+  "account.resetConfirm": "I understand this clears only this browser.",
+  "account.resetAction": "Clear browser records",
+  "account.resetDone": "Browser records were cleared. An account copy was not removed.",
 } as const;
 
 export type MessageKey = keyof typeof en;
@@ -1090,6 +1095,11 @@ export const ur: Record<MessageKey, string> = {
   "account.cycles": "تاریخ کے سائیکل",
   "account.snapshots": "اندازے کے سنیر",
   "account.baselines": "kWh اہداف",
+  "account.resetTitle": "یہ براؤزر ری سیٹ کریں",
+  "account.resetBody": "یہ اس براؤزر میں محفوظ میٹر چیک پوائنٹس، آلات، اندازے، اور تاریخ ہٹاتا ہے۔ جائزے کا نمونہ ڈیٹا ویسے ہی رہتا ہے۔ اکاؤنٹ کی نقل نہیں ہٹتی، اور کوئی کامیاب کلاؤڈ محفوظی نہیں بھیجی جاتی۔",
+  "account.resetConfirm": "میں سمجھتا ہوں کہ یہ صرف یہ براؤزر صاف کرتا ہے۔",
+  "account.resetAction": "براؤزر کے ریکارڈ صاف کریں",
+  "account.resetDone": "براؤزر کے ریکارڈ صاف ہو گئے۔ اکاؤنٹ کی نقل نہیں ہٹی۔",
 };
 
 const englishIndex = new Map<string, MessageKey>();

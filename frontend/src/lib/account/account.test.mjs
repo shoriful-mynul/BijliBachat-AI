@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { en } from "../i18n/messages.ts";
-import { recordsFromLocal } from "./local-copy.ts";
+import { clearDeviceRecords, recordsFromLocal } from "./local-copy.ts";
 import { readPublicFirebaseConfig } from "../firebase/public-config.ts";
 import { sessionView, signInOutcome } from "../firebase/session.ts";
 
@@ -71,4 +71,22 @@ test("a local copy does not claim synchronization or keep a verified draft", () 
   assert.match(en["account.copyResult"], /not synchronization/i);
   assert.match(en["account.localBody"], /not synchronized/i);
   assert.doesNotMatch(en["account.copyResult"], /successfully synchronized/i);
+});
+
+test("clearing this browser does not remove theme, language, or claim a cloud delete", () => {
+  const storage = new Map([
+    ["bijlibachat.meter-ledger.v1", "[]"],
+    ["bijlibachat.appliances.v1", "[]"],
+    ["bb-theme", "dark"],
+    ["bijlibachat.language.v1", "\"ur\""],
+    ["bb-sidebar", "collapsed"],
+  ]);
+  clearDeviceRecords({
+    removeItem: (key) => storage.delete(key),
+  });
+  assert.equal(storage.has("bijlibachat.meter-ledger.v1"), false);
+  assert.equal(storage.get("bb-theme"), "dark");
+  assert.equal(storage.get("bijlibachat.language.v1"), "\"ur\"");
+  assert.equal(storage.get("bb-sidebar"), "collapsed");
+  assert.match(en["account.resetDone"], /not removed/i);
 });

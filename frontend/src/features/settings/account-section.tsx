@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SectionHeader } from "@/components/ui/section-header";
 import { accountRequest } from "@/lib/account/api";
-import { recordsFromLocal, type CopyPlan } from "@/lib/account/local-copy";
+import { clearDeviceRecords, recordsFromLocal, type CopyPlan } from "@/lib/account/local-copy";
 import type { AuthFailure } from "@/lib/firebase/session";
 import { getApiBaseUrl } from "@/lib/health";
 import type { MessageKey } from "@/lib/i18n/messages";
@@ -43,6 +43,7 @@ export function AccountSection() {
   const [region, setRegion] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [includeLogin, setIncludeLogin] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const [plan, setPlan] = useState<CopyPlan | null>(null);
 
   useEffect(() => {
@@ -292,6 +293,32 @@ export function AccountSection() {
             {notice}
           </p>
         ) : null}
+      </Card>
+      <Card as="section">
+        <h3 className="font-display text-base font-semibold">{t("account.resetTitle")}</h3>
+        <p className="mt-1 text-sm leading-6 text-muted">{t("account.resetBody")}</p>
+        <label className="mt-3 flex min-h-12 items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            className="h-5 w-5"
+            checked={confirmReset}
+            onChange={(event) => setConfirmReset(event.target.checked)}
+          />
+          {t("account.resetConfirm")}
+        </label>
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={!confirmReset}
+          onClick={() => {
+            clearDeviceRecords(window.localStorage);
+            setConfirmReset(false);
+            setPlan(recordsFromLocal(window.localStorage));
+            setNotice(t("account.resetDone"));
+          }}
+        >
+          {t("account.resetAction")}
+        </Button>
       </Card>
     </section>
   );
