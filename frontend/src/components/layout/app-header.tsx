@@ -7,15 +7,17 @@ import { NotificationButton } from "@/components/layout/notification-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
+import { useI18n } from "@/components/i18n/language-provider";
 import { currentNavigationItem } from "@/lib/navigation";
 
 type HeaderMenu = "notifications" | "account";
 
 export function AppHeader() {
   const pathname = usePathname();
+  const { t } = useI18n();
   const current = currentNavigationItem(pathname);
-  const title = current?.label ?? "Page not found";
-  const description = current?.description ?? "This address is not part of BijliBachat.";
+  const title = current ? t(current.labelKey) : t("shell.notFoundTitle");
+  const description = current ? t(current.descriptionKey) : t("shell.notFoundDescription");
   const [menu, setMenu] = useState<HeaderMenu | null>(null);
   const [openPath, setOpenPath] = useState<string | null>(null);
   const openMenu = openPath === pathname ? menu : null;
@@ -58,7 +60,7 @@ export function AppHeader() {
         <button
           type="button"
           className="fixed inset-0 z-40 cursor-default"
-          aria-label="Close menu"
+          aria-label={t("shell.closeMenu")}
           onClick={closeMenus}
         />
       ) : null}

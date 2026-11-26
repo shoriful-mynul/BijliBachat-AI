@@ -1,15 +1,16 @@
+"use client";
+
+import { useI18n } from "@/components/i18n/language-provider";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
 import { RiskIndicator } from "@/components/ui/risk-indicator";
 import { SectionHeader } from "@/components/ui/section-header";
 
 export function CliffGuardPreview() {
+  const { t } = useI18n();
   return (
     <Card className="h-full">
-      <SectionHeader
-        title="Cliff Guard"
-        description="How close a household is to a higher slab, once the tariff is known."
-      />
+      <SectionHeader title={t("dashboard.cliffTitle")} description={t("dashboard.cliffDescription")} />
       <div className="mt-5 flex items-center gap-4">
         <svg
           viewBox="0 0 120 120"
@@ -37,26 +38,21 @@ export function CliffGuardPreview() {
           </text>
         </svg>
         <div className="min-w-0">
-          <p className="text-sm font-medium">No threshold on file</p>
-          <p className="mt-1 text-sm leading-6 text-muted">
-            The ring stays empty until a dated tariff configuration is loaded.
-          </p>
+          <p className="text-sm font-medium">{t("dashboard.noThreshold")}</p>
+          <p className="mt-1 text-sm leading-6 text-muted">{t("dashboard.noThresholdDetail")}</p>
         </div>
       </div>
       <div className="mt-5 flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted">Tariff data</span>
+          <span className="text-sm text-muted">{t("dashboard.tariffData")}</span>
           <DataTrustChip status="unavailable" />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted">Risk status</span>
+          <span className="text-sm text-muted">{t("dashboard.riskStatus")}</span>
           <RiskIndicator level="needs-verification" />
         </div>
       </div>
-      <p className="mt-4 text-sm leading-6 text-muted">
-        Protected-consumer status is not shown. No unit threshold is stated,
-        because none has been verified.
-      </p>
+      <p className="mt-4 text-sm leading-6 text-muted">{t("dashboard.protectedNote")}</p>
     </Card>
   );
 }

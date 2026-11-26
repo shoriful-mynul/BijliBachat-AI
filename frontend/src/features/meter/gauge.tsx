@@ -1,3 +1,7 @@
+"use client";
+
+import { useI18n } from "@/components/i18n/language-provider";
+
 type GaugeProps = {
   consumption: string;
   threshold: string;
@@ -6,6 +10,7 @@ type GaugeProps = {
 
 /** A 240-degree gauge. Render this only when a verified threshold exists. */
 export function ThresholdGauge({ consumption, threshold, remaining }: GaugeProps) {
+  const { t } = useI18n();
   const used = Number(consumption);
   const limit = Number(threshold);
   const ratio = Number.isFinite(used) && Number.isFinite(limit) && limit > 0 ? Math.min(used / limit, 1) : 0;
@@ -16,15 +21,17 @@ export function ThresholdGauge({ consumption, threshold, remaining }: GaugeProps
 
   return (
     <figure className="max-w-sm">
-      <svg viewBox="0 0 200 168" role="img" aria-label={`Cycle consumption ${consumption} kWh of a verified threshold ${threshold} kWh.`}>
+      <svg viewBox="0 0 200 168" role="img" aria-label={t("cliff.gaugeLabel", { used: consumption, limit: threshold })}>
         <path d={track} fill="none" stroke="currentColor" strokeOpacity="0.25" strokeWidth="14" strokeLinecap="round" />
         <path d={value} fill="none" className="stroke-aqua" strokeWidth="14" strokeLinecap="round" />
         <circle cx={notch.x} cy={notch.y} r="5" className="fill-amber" />
       </svg>
       <figcaption className="text-sm leading-6">
-        Current cycle consumption is {consumption} kWh. The verified threshold is {threshold} kWh.
-        {remaining ? ` ${remaining} kWh remain before that threshold.` : " The cycle is already past that threshold."}
-        This is not a live meter.
+        {t("cliff.gaugeCaption", {
+          used: consumption,
+          limit: threshold,
+          remain: remaining ? t("cliff.gaugeRemain", { kwh: remaining }) : t("cliff.gaugePast"),
+        })}
       </figcaption>
     </figure>
   );

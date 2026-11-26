@@ -1,6 +1,7 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useI18n } from "@/components/i18n/language-provider";
 import type { StoredCycle } from "./store";
 
 /** Bars use kilowatt-hour strings the API already returned. */
@@ -11,6 +12,9 @@ export function HistoryChart({
   cycles: StoredCycle[];
   forecasts: { cycleId: string; forecast: string; actual: string }[];
 }) {
+  const { t } = useI18n();
+  const measured = t("history.seriesMeasured");
+  const forecast = t("history.seriesForecast");
   const points = [...cycles]
     .sort((left, right) => left.ended_at.localeCompare(right.ended_at))
     .map((cycle) => {
@@ -27,7 +31,9 @@ export function HistoryChart({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="h-64 w-full min-w-0">
+      <p className="sr-only">{t("history.chartDescription")}</p>
+      <p className="text-sm leading-6 text-muted">{t("history.legend")}</p>
+      <div className="chart-ltr h-64 w-full min-w-0" role="img" aria-label={t("history.chartTitle")}>
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height: 256 }}>
           <BarChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--line)" />
@@ -43,7 +49,7 @@ export function HistoryChart({
               }}
               formatter={(value, name) => {
                 const amount = typeof value === "number" ? value : Number(Array.isArray(value) ? value[0] : value ?? 0);
-                return [`${amount} kWh`, name === "forecast" ? "Saved forecast" : "Measured use"];
+                return [`${amount} kWh`, name === "forecast" ? forecast : measured];
               }}
             />
             <Bar dataKey="actual" name="actual" fill="#42c8e8" radius={[4, 4, 0, 0]} maxBarSize={36} isAnimationActive={false} />
@@ -51,13 +57,13 @@ export function HistoryChart({
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <table className="w-full text-left text-sm">
-        <caption className="sr-only">Measured cycle consumption, with a saved forecast when one has been compared</caption>
+      <table className="w-full text-start text-sm">
+        <caption className="pb-2 text-start text-sm text-muted">{t("history.chartCaption")}</caption>
         <thead>
           <tr>
-            <th scope="col" className="py-2 font-medium">Cycle end</th>
-            <th scope="col" className="py-2 font-medium">Measured kWh</th>
-            <th scope="col" className="py-2 font-medium">Saved forecast kWh</th>
+            <th scope="col" className="py-2 font-medium">{t("history.cycleEnd")}</th>
+            <th scope="col" className="py-2 font-medium">{t("history.measuredKwh")}</th>
+            <th scope="col" className="py-2 font-medium">{t("history.savedForecast")}</th>
           </tr>
         </thead>
         <tbody>
@@ -65,7 +71,7 @@ export function HistoryChart({
             <tr key={point.id} className="border-t border-line">
               <td className="py-2">{point.name}</td>
               <td className="py-2 font-mono">{point.actualLabel}</td>
-              <td className="py-2 font-mono">{point.forecastLabel || "Not compared"}</td>
+              <td className="py-2 font-mono">{point.forecastLabel || t("history.notCompared")}</td>
             </tr>
           ))}
         </tbody>

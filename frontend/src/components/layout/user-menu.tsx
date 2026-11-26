@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Settings } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
+import { useI18n } from "@/components/i18n/language-provider";
 import { demoOverview } from "@/features/overview/demo-data";
 
 type UserMenuProps = {
@@ -15,6 +16,7 @@ export function UserMenu({ open, onOpen, onClose }: UserMenuProps) {
   const panelId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const settingsRef = useRef<HTMLAnchorElement>(null);
+  const { t } = useI18n();
   const household = demoOverview.household;
 
   useEffect(() => {
@@ -49,8 +51,8 @@ export function UserMenu({ open, onOpen, onClose }: UserMenuProps) {
         aria-expanded={open}
         aria-controls={panelId}
         aria-haspopup="menu"
-        aria-label="Sample household menu"
-        title="Sample household"
+        aria-label={t("shell.accountMenu")}
+        title={t("shell.accountPanel")}
         onClick={() => (open ? close() : onOpen())}
       >
         <span
@@ -59,23 +61,25 @@ export function UserMenu({ open, onOpen, onClose }: UserMenuProps) {
         >
           {household.initials}
         </span>
-        <span className="hidden text-left lg:block" aria-hidden="true">
-          <span className="block text-sm font-medium leading-tight">{household.fullName}</span>
-          <span className="block text-xs text-muted">Sample household</span>
+        <span className="hidden text-start lg:block" aria-hidden="true">
+          <span className="block text-sm font-medium leading-tight">
+            <bdi>{household.fullName}</bdi>
+          </span>
+          <span className="block text-xs text-muted">{t("shell.sampleHousehold")}</span>
         </span>
       </button>
       {open ? (
         <div
           id={panelId}
           role="menu"
-          aria-label="Sample household"
-          className="absolute right-0 z-50 mt-2 w-[min(18rem,calc(100vw-2rem))] rounded-2xl border border-line bg-card p-3 text-foreground"
+          aria-label={t("shell.accountPanel")}
+          className="absolute end-0 z-50 mt-2 w-[min(18rem,calc(100vw-2rem))] rounded-2xl border border-line bg-card p-3 text-foreground"
         >
-          <p className="px-2 text-sm font-semibold">{household.fullName}</p>
-          <p className="px-2 text-xs text-muted">Sample household · not signed in</p>
-          <p className="mt-2 px-2 text-sm leading-6 text-muted">
-            Sign-in is not available in this version. This name is sample copy for the layout.
+          <p className="px-2 text-sm font-semibold">
+            <bdi>{household.fullName}</bdi>
           </p>
+          <p className="px-2 text-xs text-muted">{t("shell.notSignedIn")}</p>
+          <p className="mt-2 px-2 text-sm leading-6 text-muted">{t("shell.signInLater")}</p>
           <Link
             ref={settingsRef}
             href="/settings"
@@ -84,7 +88,7 @@ export function UserMenu({ open, onOpen, onClose }: UserMenuProps) {
             onClick={onClose}
           >
             <Settings className="h-5 w-5 shrink-0" aria-hidden="true" />
-            Settings
+            {t("nav.settings.label")}
           </Link>
         </div>
       ) : null}

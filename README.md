@@ -8,7 +8,7 @@ BijliBachat AI is a Pakistan-focused household electricity expense product for t
 
 Understand → Predict → Prevent → Optimize → Measure
 
-A household should be able to see its electricity position, anticipate the month's expense, stay clear of an avoidable slab change, choose a practical action, and look back at what happened. Parts 1 through 9 of that journey are implemented. The overview still uses clearly labeled sample data. A payable rupee total is not calculated, because the loaded tariffs omit GST, fuel price adjustment, electricity duty, and the TV fee.
+A household should be able to see its electricity position, anticipate the month's expense, stay clear of an avoidable slab change, choose a practical action, and look back at what happened. Parts 1 through 10 of that journey are implemented. The overview still uses clearly labeled sample data. A payable rupee total is not calculated, because the loaded tariffs omit GST, fuel price adjustment, electricity duty, and the TV fee. English is the default language. Urdu uses a right-to-left layout. The choice stays in this browser.
 
 ## Technology stack
 
@@ -29,7 +29,7 @@ frontend/          Next.js application
   src/components/  ui, layout, and dashboard components
   src/features/    Overview sample content, settings, Bill Auditor, meter checkpoints, the forecast, appliances, and history
   src/hooks/       Shared hooks
-  src/lib/         Formatting, navigation, theme, health parsing
+  src/lib/         Formatting, navigation, theme, language, health parsing
   src/styles/      Blue Hour tokens
   src/types/       Shared TypeScript types
 backend/
@@ -133,6 +133,7 @@ Done in this version:
 - Forecast at `/prediction`. It estimates cycle use from confirmed checkpoints when seven days of history and an explicit cycle start exist. The household budget stays in this browser. A payable rupee total is not calculated. See [docs/PREDICTION_BUDGET_INTELLIGENCE.md](docs/PREDICTION_BUDGET_INTELLIGENCE.md).
 - Action Plan at `/action-plan`. Appliance use and what-if schedules are calculated by the API. Records stay in this browser. Rupee savings are not shown. See [docs/APPLIANCE_ACTION_PLAN.md](docs/APPLIANCE_ACTION_PLAN.md).
 - History at `/history`. Confirmed checkpoints become measured cycles. A saved forecast can be compared with a finished cycle. Records stay in this browser. Rupee savings are not shown. See [docs/HISTORY_INSIGHTS_SAVINGS.md](docs/HISTORY_INSIGHTS_SAVINGS.md).
+- English and Urdu on every route. Urdu is right-to-left. Settings stores the language in this browser, separately from the theme. See [docs/LOCALIZATION_ACCESSIBILITY.md](docs/LOCALIZATION_ACCESSIBILITY.md).
 - Reusable interface components, including trust and risk indicators.
 - FastAPI process health, environment-based CORS, and tests.
 - Backend contracts for a household profile, a meter checkpoint, trust labels, decimal amounts, and a public error body. Meter, forecast, appliance, and history routes calculate from records the browser sends. They do not keep those records.
@@ -157,6 +158,7 @@ The stage order is written in [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROA
 - [Prediction and budget intelligence](docs/PREDICTION_BUDGET_INTELLIGENCE.md)
 - [Appliance action plan](docs/APPLIANCE_ACTION_PLAN.md)
 - [History, insights, and savings measurement](docs/HISTORY_INSIGHTS_SAVINGS.md)
+- [Localization and accessibility](docs/LOCALIZATION_ACCESSIBILITY.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
 - [Development roadmap](docs/DEVELOPMENT_ROADMAP.md)
 - [Engineering brief](AGENTS.md)

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { ListChecks } from "lucide-react";
+import { LocalizedNotice, SourceText } from "@/components/i18n/source-text";
+import { useI18n } from "@/components/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
@@ -43,6 +45,7 @@ const blankDraft: Draft = {
 };
 
 export function ActionPlanView() {
+  const { t } = useI18n();
   const apiBase = getApiBaseUrl();
   const [ready, setReady] = useState(false);
   const [appliances, setAppliances] = useState<StoredAppliance[]>([]);
@@ -177,21 +180,19 @@ export function ActionPlanView() {
     <div className="flex flex-col gap-5">
       <EmptyState
         icon={ListChecks}
-        title="See what a different schedule would use"
-        description="Enter the appliances you actually use. The figures are calculated from those entries. A scenario is not a measured saving, and a rupee amount is not shown."
+        title={t("plan.introTitle")}
+        description={t("plan.intro")}
       />
-      {!apiBase ? <p role="alert">The API address is not configured.</p> : null}
-      {error ? <p role="alert">{error}</p> : null}
+      {!apiBase ? <p role="alert">{t("common.apiMissing")}</p> : null}
+      {error ? <p role="alert"><LocalizedNotice value={error} /></p> : null}
 
       <Card as="section" aria-labelledby="inventory-heading">
         <h2 id="inventory-heading" className="font-display text-lg font-semibold">
-          Appliances in this home
+          {t("plan.inventoryTitle")}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-muted">
-          Saved only in this browser. Another device cannot see this list. Wattage is what you enter, not a verified rating.
-        </p>
+        <p className="mt-2 text-sm leading-6 text-muted">{t("plan.inventoryHelp")}</p>
         {appliances.length === 0 ? (
-          <p className="mt-4 text-sm leading-6">No appliances yet. Add the first one with its power and the hours you usually run it.</p>
+          <p className="mt-4 text-sm leading-6">{t("plan.empty")}</p>
         ) : (
           <ul className="mt-4 flex flex-col gap-3">
             {appliances.map((item) => {
@@ -199,17 +200,23 @@ export function ActionPlanView() {
               return (
                 <li key={item.id} className="rounded-xl border border-line p-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-sm font-semibold">{item.name}</h3>
+                    <h3 className="text-sm font-semibold"><bdi>{item.name}</bdi></h3>
                     {line ? <DataTrustChip status="calculated" /> : null}
                   </div>
                   <p className="mt-2 text-sm leading-6">
-                    {item.quantity} × {item.rated_watts} W, {item.operating_hours_per_day} hours a day
-                    {item.operating_days_per_week ? `, ${item.operating_days_per_week} days a week` : ", every day of the period"}.
+                    {t("plan.schedule", {
+                      quantity: item.quantity,
+                      watts: item.rated_watts,
+                      hours: item.operating_hours_per_day,
+                      days: item.operating_days_per_week
+                        ? t("plan.daysWeek", { count: item.operating_days_per_week })
+                        : t("plan.everyDay"),
+                    })}
                   </p>
-                  <p className="mt-1 font-mono text-sm">{line ? `${line.daily_kwh} kWh on an average day` : "Waiting for the calculation."}</p>
+                  <p className="mt-1 font-mono text-sm">{line ? t("plan.dailyLine", { kwh: line.daily_kwh }) : t("plan.waiting")}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Button type="button" variant="secondary" onClick={() => setDraft(fromAppliance(item))}>Edit</Button>
-                    <Button type="button" variant="ghost" onClick={() => removeAppliance(item.id)}>Delete</Button>
+                    <Button type="button" variant="secondary" onClick={() => setDraft(fromAppliance(item))}>{t("plan.edit")}</Button>
+                    <Button type="button" variant="ghost" onClick={() => removeAppliance(item.id)}>{t("plan.delete")}</Button>
                   </div>
                 </li>
               );
@@ -217,79 +224,81 @@ export function ActionPlanView() {
           </ul>
         )}
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <Input label="Appliance name" value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
-          <Input label="Category" value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value })} hint="Optional. For example cooling or laundry." />
-          <Input label="Power (watts)" inputMode="decimal" value={draft.watts} onChange={(event) => setDraft({ ...draft, watts: event.target.value })} />
-          <Input label="How many" inputMode="numeric" value={draft.quantity} onChange={(event) => setDraft({ ...draft, quantity: event.target.value })} />
-          <Input label="Hours on a day it runs" inputMode="decimal" value={draft.hours} onChange={(event) => setDraft({ ...draft, hours: event.target.value })} hint="More than 0 and at most 24." />
-          <Input label="Days each week" inputMode="numeric" value={draft.daysPerWeek} onChange={(event) => setDraft({ ...draft, daysPerWeek: event.target.value })} hint="Optional. Leave blank to count every day." />
-          <Input label="Notes" value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} />
+          <Input label={t("plan.name")} required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
+          <Input label={t("plan.category")} value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value })} hint={t("plan.categoryHint")} />
+          <Input label={t("plan.watts")} required inputMode="decimal" value={draft.watts} onChange={(event) => setDraft({ ...draft, watts: event.target.value })} />
+          <Input label={t("plan.quantity")} required inputMode="numeric" value={draft.quantity} onChange={(event) => setDraft({ ...draft, quantity: event.target.value })} />
+          <Input label={t("plan.hours")} required inputMode="decimal" value={draft.hours} onChange={(event) => setDraft({ ...draft, hours: event.target.value })} hint={t("plan.hoursHint")} />
+          <Input label={t("plan.days")} inputMode="numeric" value={draft.daysPerWeek} onChange={(event) => setDraft({ ...draft, daysPerWeek: event.target.value })} hint={t("plan.daysHint")} />
+          <Input label={t("plan.notes")} value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} />
         </div>
-        {formError ? <p className="mt-3 text-sm" role="alert">{formError}</p> : null}
+        {formError ? <p className="mt-3 text-sm" role="alert"><LocalizedNotice value={formError} /></p> : null}
         <div className="mt-4">
-          <Button type="button" onClick={saveDraft}>{draft.id ? "Save changes" : "Add appliance"}</Button>
+          <Button type="button" onClick={saveDraft}>{draft.id ? t("plan.save") : t("plan.add")}</Button>
         </div>
       </Card>
 
       <Card as="section" aria-labelledby="overview-heading">
         <div className="flex flex-wrap items-center gap-2">
           <h2 id="overview-heading" className="font-display text-lg font-semibold">
-            Calculated use
+            {t("plan.useTitle")}
           </h2>
           <DataTrustChip status={consumption?.status === "calculated" ? "calculated" : "unavailable"} />
         </div>
         {consumption?.status === "calculated" ? (
           <>
             <p className="mt-3 font-mono text-sm">
-              {consumption.total_daily_kwh} kWh on an average day
-              {consumption.total_period_kwh ? `. ${consumption.total_period_kwh} kWh over ${consumption.days} days` : ""}.
+              {t("plan.useLine", {
+                daily: consumption.total_daily_kwh ?? "",
+                period: consumption.total_period_kwh
+                  ? t("plan.usePeriod", { total: consumption.total_period_kwh, days: consumption.days ?? "" })
+                  : "",
+              })}
             </p>
             <div className="mt-4">
               <UsageChart lines={consumption.appliances} />
             </div>
           </>
         ) : (
-          <p className="mt-3 text-sm leading-6">Add an appliance before a consumption chart can be shown. No sample appliances are included.</p>
+          <p className="mt-3 text-sm leading-6">{t("plan.useEmpty")}</p>
         )}
         <div className="mt-4 max-w-xs">
           <Input
-            label="Days to compare"
+            label={t("plan.daysLabel")}
             inputMode="numeric"
             value={scenario.days}
             onChange={(event) => setScenario({ ...scenario, days: event.target.value })}
-            hint="From 1 to 366. A 30-day month is not assumed."
+            hint={t("plan.daysFieldHint")}
           />
         </div>
       </Card>
 
       <Card as="section" aria-labelledby="scenario-heading">
         <h2 id="scenario-heading" className="font-display text-lg font-semibold">
-          Try a different schedule
+          {t("plan.scenarioTitle")}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-muted">
-          These fields do not change the appliances you saved. Reset returns the proposal to that saved schedule.
-        </p>
-        {appliances.length === 0 ? <p className="mt-4 text-sm">Add an appliance before trying a schedule.</p> : null}
+        <p className="mt-2 text-sm leading-6 text-muted">{t("plan.scenarioHelp")}</p>
+        {appliances.length === 0 ? <p className="mt-4 text-sm">{t("plan.scenarioEmpty")}</p> : null}
         <div className="mt-4 flex flex-col gap-4">
           {appliances.map((item) => {
             const change = scenario.changes[item.id];
             return (
               <div key={item.id} className="grid gap-3 md:grid-cols-3">
-                <p className="text-sm font-semibold md:col-span-3">{item.name}</p>
+                <p className="text-sm font-semibold md:col-span-3"><bdi>{item.name}</bdi></p>
                 <Input
-                  label="Proposed hours"
+                  label={t("plan.proposedHours")}
                   inputMode="decimal"
                   value={change?.operating_hours_per_day ?? item.operating_hours_per_day}
                   onChange={(event) => updateChange(item.id, { operating_hours_per_day: event.target.value }, item)}
                 />
                 <Input
-                  label="Proposed quantity"
+                  label={t("plan.proposedQuantity")}
                   inputMode="numeric"
                   value={String(change?.quantity ?? item.quantity)}
                   onChange={(event) => updateChange(item.id, { quantity: Number(event.target.value) }, item)}
                 />
                 <Input
-                  label="Proposed days each week"
+                  label={t("plan.proposedDays")}
                   inputMode="numeric"
                   value={String(change?.operating_days_per_week ?? item.operating_days_per_week ?? "")}
                   onChange={(event) =>
@@ -306,66 +315,71 @@ export function ActionPlanView() {
         </div>
         <div className="mt-4">
           <Button type="button" variant="secondary" onClick={() => setScenario({ ...scenario, changes: {} })}>
-            Reset scenario
+            {t("plan.reset")}
           </Button>
         </div>
         {comparison?.status === "estimated" ? (
           <div className="mt-4">
             <DataTrustChip status="estimated" />
             <p className="mt-2 text-sm leading-6">
-              Current schedule {comparison.baseline_kwh} kWh. Proposed schedule {comparison.scenario_kwh} kWh.
-              {" "}
-              {comparison.direction === "reduced"
-                ? `That is ${comparison.difference_kwh} kWh less`
-                : comparison.direction === "increased"
-                  ? `That is ${comparison.difference_kwh} kWh more`
-                  : "There is no difference"}
-              {comparison.percentage_difference ? ` (${comparison.percentage_difference}%)` : ""}.
+              {t("plan.compareLine", {
+                baseline: comparison.baseline_kwh ?? "",
+                scenario: comparison.scenario_kwh ?? "",
+                change:
+                  comparison.direction === "reduced"
+                    ? t("plan.less", { kwh: comparison.difference_kwh ?? "" })
+                    : comparison.direction === "increased"
+                      ? t("plan.more", { kwh: comparison.difference_kwh ?? "" })
+                      : t("plan.same"),
+                percent: comparison.percentage_difference ? ` (${comparison.percentage_difference}%)` : "",
+              })}
             </p>
           </div>
         ) : (
-          <p className="mt-4 text-sm leading-6">Enter the number of days before the comparison can be calculated.</p>
+          <p className="mt-4 text-sm leading-6">{t("plan.needDays")}</p>
         )}
       </Card>
 
       <Card as="section" aria-labelledby="actions-heading">
         <h2 id="actions-heading" className="font-display text-lg font-semibold">
-          Actions from this scenario
+          {t("plan.actionsTitle")}
         </h2>
         {plan && plan.actions.length > 0 ? (
           <ul className="mt-4 flex flex-col gap-3">
             {plan.actions.map((action) => (
               <li key={action.appliance_id} className="rounded-xl border border-line p-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold">{action.title}</h3>
+                  <h3 className="text-sm font-semibold"><SourceText>{action.title}</SourceText></h3>
                   <DataTrustChip status={chip(action.trust_status)} />
                 </div>
-                <p className="mt-2 text-sm leading-6">Current: {action.baseline_assumption}</p>
-                <p className="mt-1 text-sm leading-6">Proposed: {action.proposed_assumption}</p>
+                <p className="mt-2 text-sm leading-6">{t("plan.current")} <bdi lang="en" dir="ltr">{action.baseline_assumption}</bdi></p>
+                <p className="mt-1 text-sm leading-6">{t("plan.proposed")} <bdi lang="en" dir="ltr">{action.proposed_assumption}</bdi></p>
                 <p className="mt-2 font-mono text-sm">
-                  {action.direction === "reduced" ? `${action.difference_kwh} kWh less` : `${action.difference_kwh} kWh more`}
+                  {action.direction === "reduced"
+                    ? t("plan.kwhLess", { kwh: action.difference_kwh ?? "" })
+                    : t("plan.kwhMore", { kwh: action.difference_kwh ?? "" })}
                 </p>
-                <p className="mt-2 text-sm leading-6">{action.explanation}</p>
+                <p className="mt-2 text-sm leading-6"><SourceText>{action.explanation}</SourceText></p>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-sm leading-6">{plan?.detail ?? "Change a proposed hour or quantity, and enter the number of days, before an action can show a difference."}</p>
+          <p className="mt-3 text-sm leading-6">{plan?.detail ? <SourceText>{plan.detail}</SourceText> : t("plan.actionsEmpty")}</p>
         )}
       </Card>
 
       <Card as="section" aria-labelledby="pkr-heading">
         <div className="flex flex-wrap items-center gap-2">
           <h2 id="pkr-heading" className="font-display text-lg font-semibold">
-            Rupee savings
+            {t("plan.pkrTitle")}
           </h2>
           <DataTrustChip status="unavailable" />
         </div>
         <p className="mt-3 text-sm leading-6">
-          {pkr?.reason ?? "PKR savings are unavailable until a complete payable tariff can price both schedules. No electricity rate is assumed."}
+          {pkr?.reason ? <SourceText>{pkr.reason}</SourceText> : t("plan.pkrFallback")}
         </p>
         {pkr && pkr.missing_components.length > 0 ? (
-          <p className="mt-2 text-sm leading-6 text-muted">Missing from the loaded tariffs: {pkr.missing_components.join(", ")}.</p>
+          <p className="mt-2 text-sm leading-6 text-muted">{t("common.missingTariffs", { items: pkr.missing_components.join(", ") })}</p>
         ) : null}
       </Card>
     </div>

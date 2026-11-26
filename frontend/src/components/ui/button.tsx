@@ -9,7 +9,7 @@ const variants: Record<Variant, string> = {
   secondary: "border border-line bg-raised text-foreground hover:bg-card",
   ghost: "bg-transparent text-foreground hover:bg-raised",
   danger:
-    "border border-line bg-transparent text-foreground shadow-[inset_3px_0_0_#ff7d83] hover:bg-raised",
+    "danger-rail border border-line bg-transparent text-foreground hover:bg-raised",
 };
 
 const base =

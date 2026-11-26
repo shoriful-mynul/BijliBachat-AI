@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Shield } from "lucide-react";
+import { LocalizedNotice, SourceText } from "@/components/i18n/source-text";
+import { useI18n } from "@/components/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
@@ -17,6 +19,7 @@ import { ReadingList } from "./meter-capture";
 import type { CliffReport, Quantity } from "./types";
 
 export function CliffGuardView() {
+  const { t } = useI18n();
   const apiBase = getApiBaseUrl();
   const [readings, setReadings] = useState<StoredReading[]>([]);
   const [meter, setMeter] = useState("");
@@ -96,38 +99,38 @@ export function CliffGuardView() {
     <div className="flex flex-col gap-5">
       <EmptyState
         icon={Shield}
-        title="Where this household stands between checkpoints"
-        description="Cliff Guard uses readings you confirmed on this device. It does not watch the meter continuously. A threshold appears only when a dated tariff file contains a verified one."
-        action={<Button href="/meter-readings">Record a checkpoint</Button>}
+        title={t("cliff.introTitle")}
+        description={t("cliff.intro")}
+        action={<Button href="/meter-readings">{t("cliff.record")}</Button>}
       />
-      {!apiBase ? <p role="alert">The API address is not configured.</p> : null}
-      {error ? <p role="alert">{error}</p> : null}
-      {loading ? <p className="text-sm text-muted">Calculating from the checkpoints on this device.</p> : null}
+      {!apiBase ? <p role="alert">{t("common.apiMissing")}</p> : null}
+      {error ? <p role="alert"><LocalizedNotice value={error} /></p> : null}
+      {loading ? <p className="text-sm text-muted" role="status">{t("cliff.calculating")}</p> : null}
 
       <Card as="section" aria-labelledby="status-heading">
         <div className="flex flex-wrap items-center gap-3">
           <h2 id="status-heading" className="font-display text-lg font-semibold">
-            Current meter status
+            {t("cliff.statusTitle")}
           </h2>
           {report?.latest_reading ? <DataTrustChip status={chip(report.latest_reading.trust_status)} /> : <DataTrustChip status="unavailable" />}
         </div>
         {report?.latest_reading ? (
           <p className="mt-3 font-mono text-lg">{report.latest_reading.register_kwh} kWh</p>
         ) : (
-          <p className="mt-3 text-sm leading-6">No checkpoint yet. Record one before consumption can be calculated.</p>
+          <p className="mt-3 text-sm leading-6">{t("cliff.none")}</p>
         )}
         <p className="mt-2 text-sm text-muted">
-          Last updated {report?.last_updated ? formatWhen(report.last_updated) : "not available"}.
+          {t("cliff.updated", { when: report?.last_updated ? formatWhen(report.last_updated) : t("common.notAvailable") })}
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Fact label="Since the previous checkpoint" quantity={report?.consumption_kwh} period={report?.observation_period} />
-          <Fact label="Average daily use" quantity={report?.average_daily_kwh} period={report?.observation_period} />
+          <Fact label={t("cliff.since")} quantity={report?.consumption_kwh} period={report?.observation_period} />
+          <Fact label={t("cliff.average")} quantity={report?.average_daily_kwh} period={report?.observation_period} />
         </div>
       </Card>
 
       <Card as="section" aria-labelledby="threshold-heading">
         <h2 id="threshold-heading" className="font-display text-lg font-semibold">
-          Threshold
+          {t("cliff.thresholdTitle")}
         </h2>
         {verified && report?.threshold_kwh && report.billing_cycle_consumption_kwh.value ? (
           <div className="mt-4">
@@ -136,61 +139,59 @@ export function CliffGuardView() {
               threshold={report.threshold_kwh}
               remaining={report.remaining_kwh.value}
             />
-            <Fact label="Safe daily allowance" quantity={report.safe_daily_allowance_kwh} />
+            <Fact label={t("cliff.allowance")} quantity={report.safe_daily_allowance_kwh} />
           </div>
         ) : (
           <p className="mt-3 max-w-2xl text-sm leading-6">
-            {report?.remaining_kwh.detail ?? "Threshold needs verification for this tariff configuration."}
-            {report?.threshold_source ? ` The resolved file is ${report.threshold_source}.` : ""}
+            {report?.remaining_kwh.detail ? <SourceText>{report.remaining_kwh.detail}</SourceText> : t("cliff.needsVerification")}
+            {report?.threshold_source ? ` ${t("cliff.source", { source: report.threshold_source })}` : ""}
           </p>
         )}
-        <p className="mt-3 text-sm leading-6">{report?.projection.message}</p>
+        <p className="mt-3 text-sm leading-6"><SourceText>{report?.projection.message}</SourceText></p>
         {report?.projection.projected_date ? (
-          <p className="mt-2 text-sm">Projected date {report.projection.projected_date}. This estimate assumes the observed pace continues.</p>
+          <p className="mt-2 text-sm">{t("cliff.projected", { date: report.projection.projected_date })}</p>
         ) : null}
       </Card>
 
       <Card as="section" aria-labelledby="cycle-heading">
         <h2 id="cycle-heading" className="font-display text-lg font-semibold">
-          Billing cycle, if you know it
+          {t("cliff.cycleTitle")}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-muted">
-          Leave these blank when the cycle start reading is not known. An older checkpoint is not treated as the start of the bill. The company and tariff fields are used only to look for a verified threshold. They do not classify the household.
-        </p>
+        <p className="mt-2 text-sm leading-6 text-muted">{t("cliff.cycleHelp")}</p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <Input label="Cycle start date" type="date" value={cycleStart} onChange={(event) => setCycleStart(event.target.value)} />
-          <Input label="Cycle end date" type="date" value={cycleEnd} onChange={(event) => setCycleEnd(event.target.value)} />
-          <Input label="Register at cycle start" inputMode="decimal" value={cycleRegister} onChange={(event) => setCycleRegister(event.target.value)} />
-          <Input label="Distribution company" value={provider} onChange={(event) => setProvider(event.target.value)} hint="Optional. For example IESCO." />
+          <Input label={t("forecast.startDate")} type="date" value={cycleStart} onChange={(event) => setCycleStart(event.target.value)} />
+          <Input label={t("forecast.endDate")} type="date" value={cycleEnd} onChange={(event) => setCycleEnd(event.target.value)} />
+          <Input label={t("forecast.startRegister")} inputMode="decimal" value={cycleRegister} onChange={(event) => setCycleRegister(event.target.value)} />
+          <Input label={t("forecast.company")} value={provider} onChange={(event) => setProvider(event.target.value)} hint={t("cliff.companyHint")} />
           <Select
-            label="Tariff type"
+            label={t("forecast.tariffType")}
             value={tariffType}
             onChange={(event) => setTariffType(event.target.value)}
             options={[
-              { value: "", label: "Not selected" },
-              { value: "non_tou", label: "Non time-of-use" },
-              { value: "tou", label: "Time of use" },
+              { value: "", label: t("forecast.notSelected") },
+              { value: "non_tou", label: t("forecast.nonTou") },
+              { value: "tou", label: t("forecast.tou") },
             ]}
           />
           <Select
-            label="Eligibility"
+            label={t("forecast.eligibilityShort")}
             value={eligibility}
             onChange={(event) => setEligibility(event.target.value)}
             options={[
-              { value: "", label: "Not selected" },
-              { value: "lifeline", label: "Lifeline" },
-              { value: "protected", label: "Protected" },
-              { value: "unprotected", label: "Unprotected" },
+              { value: "", label: t("forecast.notSelected") },
+              { value: "lifeline", label: t("forecast.lifeline") },
+              { value: "protected", label: t("forecast.protected") },
+              { value: "unprotected", label: t("forecast.unprotected") },
             ]}
           />
         </div>
         <div className="mt-4 max-w-sm">
           <Select
-            label="Meter"
+            label={t("forecast.meter")}
             value={meter}
             onChange={(event) => setMeter(event.target.value)}
             options={[
-              { value: "", label: "Meter number not recorded" },
+              { value: "", label: t("forecast.meterUnknown") },
               ...Array.from(new Set(readings.map((item) => item.meter_reference).filter((item): item is string => Boolean(item)))).map((item) => ({
                 value: item,
                 label: item,
@@ -198,11 +199,11 @@ export function CliffGuardView() {
             ]}
           />
         </div>
-        {report ? <Fact label="Billing-cycle consumption" quantity={report.billing_cycle_consumption_kwh} /> : null}
+        {report ? <Fact label={t("cliff.cycleUse")} quantity={report.billing_cycle_consumption_kwh} /> : null}
         {report && report.limitations.length > 0 ? (
           <ul className="mt-4 flex flex-col gap-1 text-sm text-muted">
             {report.limitations.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item}><SourceText>{item}</SourceText></li>
             ))}
           </ul>
         ) : null}
@@ -213,7 +214,7 @@ export function CliffGuardView() {
       />
       <p className="text-sm">
         <Link href="/meter-readings" className="inline-flex min-h-12 items-center font-semibold underline">
-          Add or review a checkpoint
+          {t("cliff.add")}
         </Link>
       </p>
     </div>
@@ -221,6 +222,7 @@ export function CliffGuardView() {
 }
 
 function Fact({ label, quantity, period }: { label: string; quantity?: Quantity; period?: string | null }) {
+  const { t } = useI18n();
   if (!quantity) {
     return null;
   }
@@ -230,9 +232,9 @@ function Fact({ label, quantity, period }: { label: string; quantity?: Quantity;
         <h3 className="text-sm font-semibold">{label}</h3>
         <DataTrustChip status={chip(quantity.trust_status)} />
       </div>
-      <p className="mt-1 font-mono text-sm">{quantity.value ?? "Unavailable"}</p>
-      <p className="mt-1 text-sm leading-6 text-muted">{quantity.detail}</p>
-      {period ? <p className="text-sm text-muted">Period {period}.</p> : null}
+      <p className="mt-1 font-mono text-sm">{quantity.value ?? t("common.unavailable")}</p>
+      <p className="mt-1 text-sm leading-6 text-muted"><SourceText>{quantity.detail}</SourceText></p>
+      {period ? <p className="text-sm text-muted">{t("common.period", { period })}</p> : null}
     </div>
   );
 }

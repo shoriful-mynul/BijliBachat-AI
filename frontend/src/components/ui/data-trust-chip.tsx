@@ -1,3 +1,5 @@
+"use client";
+
 import {
   BadgeCheck,
   Calculator,
@@ -6,35 +8,37 @@ import {
   ScanText,
   type LucideIcon,
 } from "lucide-react";
+import { useI18n } from "@/components/i18n/language-provider";
 import { cn } from "@/lib/cn";
+import type { MessageKey } from "@/lib/i18n/messages";
 import type { DataTrustStatus } from "@/types/trust";
 
 const trustMeta: Record<
   DataTrustStatus,
-  { label: string; Icon: LucideIcon; disc: string }
+  { labelKey: MessageKey; Icon: LucideIcon; disc: string }
 > = {
   verified: {
-    label: "Verified",
+    labelKey: "trust.verified",
     Icon: BadgeCheck,
     disc: "bg-teal text-ink",
   },
   calculated: {
-    label: "Calculated",
+    labelKey: "trust.calculated",
     Icon: Calculator,
     disc: "bg-aqua text-ink",
   },
   extracted: {
-    label: "Extracted",
+    labelKey: "trust.extracted",
     Icon: ScanText,
     disc: "bg-lavender text-ink",
   },
   estimated: {
-    label: "Estimated",
+    labelKey: "trust.estimated",
     Icon: CircleDashed,
     disc: "bg-amber text-ink",
   },
   unavailable: {
-    label: "Unavailable",
+    labelKey: "trust.unavailable",
     Icon: CircleOff,
     disc: "bg-ink text-ice",
   },
@@ -46,13 +50,14 @@ type DataTrustChipProps = {
 };
 
 export function DataTrustChip({ status, className }: DataTrustChipProps) {
+  const { t } = useI18n();
   const meta = trustMeta[status];
   const Icon = meta.Icon;
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-current/15 bg-black/5 py-1 pr-3 pl-1 text-sm font-medium",
+        "inline-flex min-h-8 items-center gap-2 rounded-full border border-current/15 bg-black/5 py-1 ps-1 pe-3 text-sm font-medium",
         className,
       )}
     >
@@ -65,7 +70,7 @@ export function DataTrustChip({ status, className }: DataTrustChipProps) {
       >
         <Icon className="h-3.5 w-3.5" />
       </span>
-      {meta.label}
+      {t(meta.labelKey)}
     </span>
   );
 }
