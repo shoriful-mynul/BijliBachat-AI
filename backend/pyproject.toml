@@ -5,11 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bijlibachat-backend"
 version = "0.1.0"
-description = "BijliBachat AI API. Dated tariff files and a Decimal calculation engine are included. A payable total is produced only when every required component is verified."
+description = "BijliBachat AI API. Dated tariff files, a Decimal calculation engine, and Gemini bill extraction are included. A payable total is produced only when every required component is verified."
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<1",
+  "google-genai>=1.75,<2",
   "pydantic>=2.10,<3",
+  "python-multipart>=0.0.20,<1",
   "pydantic-settings>=2.6,<3",
   "uvicorn>=0.32,<1",
 ]

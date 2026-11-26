@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FeaturePlaceholder } from "@/components/layout/feature-placeholder";
+import { BillAuditor } from "@/features/bill-auditor/bill-auditor";
 import { navigationItem } from "@/lib/navigation";
 
 const page = navigationItem("/bill-auditor");
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function BillAuditorPage() {
-  return <FeaturePlaceholder item={page} />;
+  return <BillAuditor />;
 }

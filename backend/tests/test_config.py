@@ -40,7 +40,16 @@ def test_settings_reject_wildcard_origin() -> None:
 def test_settings_do_not_require_secrets() -> None:
     settings = Settings(app_env="test")
 
-    assert set(Settings.model_fields) == {"app_env", "service_name", "cors_origins"}
+    assert set(Settings.model_fields) == {
+        "app_env",
+        "service_name",
+        "cors_origins",
+        "gemini_api_key",
+        "gemini_model",
+        "gemini_timeout_seconds",
+    }
     assert settings.app_env == "test"
+    assert settings.gemini_api_key is None
+    assert settings.gemini_model == "gemini-3.8-flash"
     assert "secret" not in settings.model_dump()
     assert "key" not in settings.model_dump()

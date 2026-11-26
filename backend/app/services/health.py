@@ -12,8 +12,12 @@ def build_health(settings: Settings) -> HealthResponse:
         version=settings.version,
         environment=settings.app_env,
         detail=(
-            "The API process is running. Firebase, Gemini, and a complete "
-            "payable tariff are not connected."
+            "The API process is running. Firebase and a complete payable tariff are not connected."
+            if settings.gemini_api_key
+            else (
+                "The API process is running. Firebase, Gemini, and a complete "
+                "payable tariff are not connected."
+            )
         ),
         checked_at=datetime.now(timezone.utc),
         checks=[
@@ -32,7 +36,11 @@ def build_health(settings: Settings) -> HealthResponse:
             HealthCheck(
                 name="gemini",
                 state="not_configured",
-                detail="Gemini is not connected.",
+                detail=(
+                    "A Gemini key is configured. This check does not call Gemini."
+                    if settings.gemini_api_key
+                    else "Gemini is not connected."
+                ),
             ),
             HealthCheck(
                 name="tariff_configuration",

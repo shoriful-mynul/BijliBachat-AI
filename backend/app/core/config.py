@@ -46,7 +46,7 @@ def parse_cors_origins(value: str) -> list[str]:
 
 
 class Settings(BaseSettings):
-    """Environment-backed process settings. No external services are required."""
+    """Environment-backed process settings. Gemini is optional and stays server-side."""
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_ROOT / ".env",
@@ -62,6 +62,16 @@ class Settings(BaseSettings):
             "http://127.0.0.1:3000",
         ]
     )
+    gemini_api_key: str | None = Field(default=None, repr=False)
+    gemini_model: str = Field(default="gemini-3.8-flash", min_length=1, max_length=80)
+    gemini_timeout_seconds: int = Field(default=45, ge=5, le=120)
+
+    @field_validator("gemini_api_key", mode="before")
+    @classmethod
+    def blank_gemini_key_is_unset(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
     @field_validator("cors_origins", mode="before")
     @classmethod

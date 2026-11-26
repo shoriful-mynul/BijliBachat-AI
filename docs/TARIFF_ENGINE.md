@@ -1,6 +1,6 @@
 # Tariff engine
 
-Python is the only place a tariff amount is calculated. The frontend does not call this engine yet. Gemini is not connected and must not invent a rate or change a result.
+Python is the only place a tariff amount is calculated. Bill Auditor calls the API, which calls this engine, after a person confirms the bill. Gemini reads a document and must not invent a rate or change a result.
 
 A payable total is returned only when every required component in the matching file is verified and every required input was supplied. No production file meets that bar today, because the verified schedules do not state GST, fuel price adjustment, electricity duty, or a TV fee.
 

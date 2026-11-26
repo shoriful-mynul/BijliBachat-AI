@@ -16,10 +16,10 @@ A household should be able to see its electricity position, anticipate the month
 | --- | --- |
 | Frontend | Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind CSS 4 |
 | Charts and icons | Recharts 3, Lucide React |
-| Backend | Python 3.11+, FastAPI, Pydantic v2, Uvicorn |
+| Backend | Python 3.11+, FastAPI, Pydantic v2, Uvicorn, google-genai 1.75 |
 | Tests | pytest, FastAPI's `TestClient` |
 
-Planned later, and not connected now: Firebase Authentication, Cloud Firestore, Firebase Storage, and the Google Gemini API (including vision OCR).
+Planned later, and not connected now: Firebase Authentication, Cloud Firestore, and Firebase Storage. Gemini is used only for bill extraction when `GEMINI_API_KEY` is set on the server. Meter-photo OCR is not implemented.
 
 ## Project structure
 
@@ -27,7 +27,7 @@ Planned later, and not connected now: Firebase Authentication, Cloud Firestore, 
 frontend/          Next.js application
   src/app/         Routes and the root layout
   src/components/  ui, layout, and dashboard components
-  src/features/    Overview sample content and settings controls
+  src/features/    Overview sample content, settings, and Bill Auditor
   src/hooks/       Shared hooks
   src/lib/         Formatting, navigation, theme, health parsing
   src/styles/      Blue Hour tokens
@@ -35,10 +35,11 @@ frontend/          Next.js application
 backend/
   app/api/         HTTP routes and the public error response
   app/core/        Environment configuration
-  app/schemas/     Health, household, meter, tariff, trust, and error contracts
-  app/services/    Health report and the tariff calculation engine
+  app/schemas/     Health, household, meter, tariff, bill, trust, and error contracts
+  app/services/    Health, tariff engine, bill audit, and complaint draft
+  app/integrations/gemini/  Document extraction client
   app/tariffs/     Dated tariff files and availability notes
-  tests/           Contract, tariff, config, and API tests
+  tests/           Contract, tariff, bill, config, and API tests
 docs/              Architecture, design system, roadmap
 .cursor/rules/     Permanent engineering and design rules
 ```
@@ -54,7 +55,7 @@ cp .env.example backend/.env
 cp .env.example frontend/.env.local
 ```
 
-`frontend/.env.local` only needs the `NEXT_PUBLIC_API_URL` line. `backend/.env` needs `APP_ENV` and `CORS_ORIGINS`. Do not add API keys. None are used in this version.
+`frontend/.env.local` only needs the `NEXT_PUBLIC_API_URL` line. `backend/.env` needs `APP_ENV` and `CORS_ORIGINS`. `GEMINI_API_KEY` is optional and stays empty unless you want live bill reading. Do not commit a real key. Tests do not need one.
 
 The example file is safe to commit. Real `.env` files are gitignored.
 
@@ -104,7 +105,7 @@ pytest
 
 The dev extra installs `httpx2`, which is what this version of Starlette's `TestClient` imports. The older `httpx` package still runs the client, and Starlette warns that path is deprecated.
 
-`status: "ok"` means the API process handled the request. The payload also says that Firebase, Gemini, and a complete payable tariff are not connected. Tariff files are inspected and calculated through `/api/tariffs`, not through the health payload.
+`status: "ok"` means the API process handled the request. The payload says Firebase and a complete payable tariff are not connected. The Gemini check stays `not_configured` because health does not call Gemini. Tariff files are inspected and calculated through `/api/tariffs`, not through the health payload.
 
 ## Environment configuration
 
@@ -112,7 +113,10 @@ The dev extra installs `httpx2`, which is what this version of Starlette's `Test
 | --- | --- | --- |
 | `APP_ENV` | Backend | `development`, `test`, or `production` |
 | `CORS_ORIGINS` | Backend | Comma-separated explicit `http` or `https` origins. `*` is rejected. The default allows both `localhost:3000` and `127.0.0.1:3000` |
-| `NEXT_PUBLIC_API_URL` | Frontend | Base URL of the API, for the service-status line only |
+| `NEXT_PUBLIC_API_URL` | Frontend | Base URL of the API |
+| `GEMINI_API_KEY` | Backend | Optional Gemini key. Missing key makes bill reading return 503 |
+| `GEMINI_MODEL` | Backend | Gemini model. Default `gemini-3.8-flash` |
+| `GEMINI_TIMEOUT_SECONDS` | Backend | Extraction timeout. Default 45 |
 
 If `NEXT_PUBLIC_API_URL` is missing, the interface says the API address is not configured. It does not invent a status.
 
@@ -123,7 +127,8 @@ Done in this version:
 - Blue Hour design tokens, dark and light themes, and the font setup.
 - Application shell with a grouped desktop sidebar, a compact header, and a mobile tab bar. `/` redirects to `/dashboard`.
 - Overview dashboard built from labeled sample data.
-- Placeholder pages for Cliff Guard, Bill Auditor, Meter Readings, Action Plan, and Consumption History. They describe the later work and do not show figures.
+- Bill Auditor at `/bill-auditor`. It uploads a bill, reviews an unconfirmed extraction, and compares confirmed amounts. See [docs/BILL_AUDITOR.md](docs/BILL_AUDITOR.md).
+- Placeholder pages for Cliff Guard, Meter Readings, Action Plan, and Consumption History. They describe the later work and do not show figures.
 - Reusable interface components, including trust and risk indicators.
 - FastAPI process health, environment-based CORS, and tests.
 - Backend contracts for a household profile, a meter checkpoint, trust labels, decimal amounts, and a public error body. No route accepts those household or meter records yet.
@@ -131,18 +136,19 @@ Done in this version:
 
 Not done:
 
-- Sign-in, stored households, bill or meter OCR, a payable production bill, Cliff Guard rules, forecasting, budgets, savings calculations, and notifications. The frontend does not call the tariff engine.
+- Sign-in, stored households, meter-photo OCR, a payable production bill, Cliff Guard rules, forecasting, budgets, savings calculations, and notifications. The sample overview does not call the tariff engine.
 
 The overview bill, units, chart, checkpoint, and illustrative saving are sample copy. They are marked **Demo data** and carry a trust chip. Cliff Guard shows **Needs verification** and does not state a unit threshold or a protected-consumer status.
 
 ## Future feature roadmap
 
-The stage order is written in [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROADMAP.md). The tariff engine is documented in [docs/TARIFF_ENGINE.md](docs/TARIFF_ENGINE.md). Screens still treat overview rupees as sample data.
+The stage order is written in [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROADMAP.md). The tariff engine is documented in [docs/TARIFF_ENGINE.md](docs/TARIFF_ENGINE.md). Bill reading and audit rules are in [docs/BILL_AUDITOR.md](docs/BILL_AUDITOR.md). Screens still treat overview rupees as sample data.
 
 ## Further reading
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Tariff engine](docs/TARIFF_ENGINE.md)
+- [Bill auditor](docs/BILL_AUDITOR.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
 - [Development roadmap](docs/DEVELOPMENT_ROADMAP.md)
 - [Engineering brief](AGENTS.md)
