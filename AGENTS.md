@@ -43,7 +43,7 @@ Keep the interface accessible and usable at 390px, about 768px, and 1440px. Inte
 ## Where work goes
 
 - `frontend/` — Next.js App Router, Blue Hour UI, sample overview.
-- `backend/` — FastAPI. Calculation and validation authority. Household and meter contracts live in `app/schemas/`. Routes do not calculate bills or open a database.
+- `backend/` — FastAPI. Calculation and validation authority. Household and meter contracts live in `app/schemas/`. Tariff maths lives in `app/services/tariff_engine.py` and reads dated files under `app/tariffs/`. Routes validate requests and call that service. They do not contain tariff formulas or open a database.
 - `docs/` — architecture, design system, and the stage plan.
 
-Do not add Firebase, Firestore, Gemini, bill OCR, meter OCR, tariff maths, forecasting, Cliff Guard rules, budgets, or notification delivery until that stage is explicitly requested. Prepare a clean boundary for them instead of stubbing a fake result.
+Do not add Firebase, Firestore, Gemini, bill OCR, meter OCR, forecasting, Cliff Guard rules, budgets, or notification delivery until that stage is explicitly requested. Prepare a clean boundary for them instead of stubbing a fake result. Do not add a tariff rate that is not copied from a verified, dated source.

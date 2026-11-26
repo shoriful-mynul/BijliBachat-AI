@@ -1,0 +1,54 @@
+{
+  "entries": [
+    {
+      "provider_code": "IESCO",
+      "consumer_category": "residential",
+      "tariff_type": "non_tou",
+      "eligibility": "protected",
+      "status": "needs_verification",
+      "reason": "The IESCO tariff guide says only protected residential consumers receive the benefit of one previous slab, and it does not define that arithmetic. No protected configuration is loaded, and protected status is not inferred from the units used this month.",
+      "source_url": "https://iesco.com.pk/tariff-guide",
+      "retrieval_date": "2026-11-26",
+      "limitations": [
+        "The protected rows are visible on the same A-1 table. They are not calculated until the slab-benefit formula is verified from the source.",
+        "A six-month classification rule is not applied by this engine."
+      ]
+    },
+    {
+      "provider_code": "IESCO",
+      "status": "unavailable",
+      "reason": "Only three residential A-1 postpaid schedules are loaded: lifeline, unprotected, and time of use. The same IESCO page also publishes protected rows, a prepaid residential row, and commercial, industrial, agricultural, and other schedules. Those schedules are not loaded. None of the loaded schedules include GST, fuel price adjustment, electricity duty, or a TV fee, so they cannot produce a payable total.",
+      "source_url": "https://iesco.com.pk/tariff-guide",
+      "retrieval_date": "2026-11-26",
+      "limitations": [
+        "Protected residential rows are on the same table and are recorded separately. Their slab-benefit formula is not defined on the page.",
+        "The prepaid residential row shows a fixed charge of Rs 675 per kW and a variable charge of Rs 42.12. It is not loaded, because no prepaid method is configured.",
+        "Commercial, industrial, agricultural, and other tables on the same page use different fixed-charge rules. They were not copied into a configuration."
+      ]
+    },
+    {
+      "provider_code": "LESCO",
+      "status": "unavailable",
+      "reason": "The LESCO electricity-tariff page still presents a schedule headed W.E.F 05-11-2021 and more than one historical table. It was not used as a current schedule. No February 2026 LESCO schedule was verified, so no LESCO rates are loaded.",
+      "source_url": "https://www.lesco.gov.pk/3000063",
+      "retrieval_date": "2026-11-26",
+      "limitations": [
+        "IESCO rates were not copied onto LESCO.",
+        "The older figures on the LESCO page are not stored as a fallback."
+      ]
+    },
+    {
+      "provider_code": "KE",
+      "status": "unavailable",
+      "reason": "K-Electric states that S.R.O. 279(I)/2026 dated 12 February 2026 applies to its customers and describes residential fixed charges. A variable-charge table for that SRO was not available as readable text, so no K-Electric rate was copied into a configuration.",
+      "source_url": "https://ke.com.pk/faqs/",
+      "retrieval_date": "2026-11-26",
+      "limitations": [
+        "The tariff-structure page at https://ke.com.pk/tariff-structure/ lists the notification and was not used as a variable-rate table.",
+        "A sidebar note on that page mentions electricity duty. It was not tied to this SRO clearly enough to store a duty rate.",
+        "IESCO variable rates were not copied onto K-Electric.",
+        "Later K-Electric periodic-adjustment notices were not treated as a full residential schedule."
+      ]
+    }
+  ]
+}

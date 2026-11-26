@@ -35,9 +35,10 @@ frontend/          Next.js application
 backend/
   app/api/         HTTP routes and the public error response
   app/core/        Environment configuration
-  app/schemas/     Health, household, meter, trust, and error contracts
-  app/services/    Health report. Future calculations stay here
-  tests/           Contract, config, and API tests
+  app/schemas/     Health, household, meter, tariff, trust, and error contracts
+  app/services/    Health report and the tariff calculation engine
+  app/tariffs/     Dated tariff files and availability notes
+  tests/           Contract, tariff, config, and API tests
 docs/              Architecture, design system, roadmap
 .cursor/rules/     Permanent engineering and design rules
 ```
@@ -103,7 +104,7 @@ pytest
 
 The dev extra installs `httpx2`, which is what this version of Starlette's `TestClient` imports. The older `httpx` package still runs the client, and Starlette warns that path is deprecated.
 
-`status: "ok"` means the API process handled the request. The payload also says that Firebase, Gemini, and the tariff file are not connected.
+`status: "ok"` means the API process handled the request. The payload also says that Firebase, Gemini, and a complete payable tariff are not connected. Tariff files are inspected and calculated through `/api/tariffs`, not through the health payload.
 
 ## Environment configuration
 
@@ -125,21 +126,23 @@ Done in this version:
 - Placeholder pages for Cliff Guard, Bill Auditor, Meter Readings, Action Plan, and Consumption History. They describe the later work and do not show figures.
 - Reusable interface components, including trust and risk indicators.
 - FastAPI process health, environment-based CORS, and tests.
-- Backend contracts for a household profile, a meter checkpoint, trust labels, decimal amounts, and a public error body. No route accepts those records yet.
+- Backend contracts for a household profile, a meter checkpoint, trust labels, decimal amounts, and a public error body. No route accepts those household or meter records yet.
+- A versioned tariff engine. IESCO residential energy and fixed-charge rows from the company's February 2026 tariff guide can be calculated. The result is not a payable bill, because taxes and fuel adjustment are not in that source. LESCO, K-Electric, and IESCO protected consumption stay unavailable. See [docs/TARIFF_ENGINE.md](docs/TARIFF_ENGINE.md).
 
 Not done:
 
-- Sign-in, stored households, bill or meter OCR, tariff configuration, bill calculation, Cliff Guard rules, forecasting, budgets, savings calculations, and notifications.
+- Sign-in, stored households, bill or meter OCR, a payable production bill, Cliff Guard rules, forecasting, budgets, savings calculations, and notifications. The frontend does not call the tariff engine.
 
 The overview bill, units, chart, checkpoint, and illustrative saving are sample copy. They are marked **Demo data** and carry a trust chip. Cliff Guard shows **Needs verification** and does not state a unit threshold or a protected-consumer status.
 
 ## Future feature roadmap
 
-The stage order is written in [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROADMAP.md). Later stages add a verified tariff file and a Python calculation engine before any screen treats a rupee amount as calculated.
+The stage order is written in [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROADMAP.md). The tariff engine is documented in [docs/TARIFF_ENGINE.md](docs/TARIFF_ENGINE.md). Screens still treat overview rupees as sample data.
 
 ## Further reading
 
 - [Architecture](docs/ARCHITECTURE.md)
+- [Tariff engine](docs/TARIFF_ENGINE.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
 - [Development roadmap](docs/DEVELOPMENT_ROADMAP.md)
 - [Engineering brief](AGENTS.md)

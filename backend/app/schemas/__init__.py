@@ -1,7 +1,7 @@
 """Request and response contracts.
 
 Household and meter models describe future records. They are not stored,
-and no route accepts them yet.
+and no route accepts them yet. Tariff requests are accepted by the tariff routes.
 """
 
 from app.schemas.common import KilowattHours, MoneyAmount, TrustStatus, UtcTimestamp

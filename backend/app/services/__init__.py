@@ -1,1 +1,1 @@
-"""Application services. Calculation services are not part of this version."""
+"""Application services. Tariff arithmetic lives in tariff_engine."""

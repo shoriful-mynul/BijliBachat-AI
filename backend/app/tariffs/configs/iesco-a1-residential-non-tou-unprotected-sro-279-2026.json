@@ -1,0 +1,130 @@
+{
+  "config_id": "iesco-a1-residential-non-tou-unprotected-sro-279-2026",
+  "version": "sro-279-i-2026",
+  "provider_code": "IESCO",
+  "consumer_category": "residential",
+  "tariff_type": "non_tou",
+  "eligibility": "unprotected",
+  "schedule_name": "A-1 Residential",
+  "billing_frequency": "monthly",
+  "effective_from": "2026-02-12",
+  "effective_to": null,
+  "slab_method": "single_slab",
+  "verification_status": "verified",
+  "synthetic": false,
+  "rounding": {
+    "money_quantum": "0.01",
+    "mode": "half_up",
+    "stage": "component",
+    "source_status": "engine_convention",
+    "note": "The IESCO tariff guide does not state a rounding rule. Each money component is rounded to the nearest paisa, half up. Products stay exact until that step."
+  },
+  "slabs": [
+    {
+      "lower_exclusive_kwh": "0",
+      "upper_inclusive_kwh": "100",
+      "rate_per_kwh": "22.44",
+      "fixed_charge_per_kw": "275.00"
+    },
+    {
+      "lower_exclusive_kwh": "100",
+      "upper_inclusive_kwh": "200",
+      "rate_per_kwh": "28.91",
+      "fixed_charge_per_kw": "300.00"
+    },
+    {
+      "lower_exclusive_kwh": "200",
+      "upper_inclusive_kwh": "300",
+      "rate_per_kwh": "33.10",
+      "fixed_charge_per_kw": "350.00"
+    },
+    {
+      "lower_exclusive_kwh": "300",
+      "upper_inclusive_kwh": "400",
+      "rate_per_kwh": "36.46",
+      "fixed_charge_per_kw": "400.00"
+    },
+    {
+      "lower_exclusive_kwh": "400",
+      "upper_inclusive_kwh": "500",
+      "rate_per_kwh": "38.95",
+      "fixed_charge_per_kw": "500.00"
+    },
+    {
+      "lower_exclusive_kwh": "500",
+      "upper_inclusive_kwh": "600",
+      "rate_per_kwh": "40.22",
+      "fixed_charge_per_kw": "675.00"
+    },
+    {
+      "lower_exclusive_kwh": "600",
+      "upper_inclusive_kwh": "700",
+      "rate_per_kwh": "41.85",
+      "fixed_charge_per_kw": "675.00"
+    },
+    {
+      "lower_exclusive_kwh": "700",
+      "upper_inclusive_kwh": null,
+      "rate_per_kwh": "47.20",
+      "fixed_charge_per_kw": "675.00"
+    }
+  ],
+  "fixed_charge": {
+    "state": "applicable_verified",
+    "basis": "per_kw_of_sanctioned_load",
+    "reason": "The IESCO tariff guide states that non-time-of-use fixed charges are the sanctioned load in kW multiplied by the rate for the selected consumption row."
+  },
+  "minimum_charge": {
+    "state": "not_applicable",
+    "reason": "The IESCO tariff guide says the minimum customer charge does not apply where monthly fixed charges apply."
+  },
+  "time_of_use": null,
+  "adjustments": [
+    {
+      "code": "gst",
+      "label": "GST",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state GST."
+    },
+    {
+      "code": "fuel_price_adjustment",
+      "label": "Fuel price adjustment",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state a fuel price adjustment for this schedule."
+    },
+    {
+      "code": "electricity_duty",
+      "label": "Electricity duty",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state electricity duty."
+    },
+    {
+      "code": "tv_fee",
+      "label": "TV fee",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state a TV fee."
+    }
+  ],
+  "source": {
+    "issuing_authority": "Islamabad Electric Supply Company (IESCO), publishing the schedule under S.R.O. 279(I)/2026",
+    "document_title": "IESCO Tariff Guide — Applicable Tariff",
+    "source_url": "https://iesco.com.pk/tariff-guide",
+    "notification_date": "2026-02-12",
+    "retrieval_date": "2026-11-26",
+    "reference": "A-1 Residential table, unprotected rows for sanctioned load up to 5 kW, and the fixed-charge note beneath that table",
+    "verification_status": "verified",
+    "limitations": [
+      "Rates were read from the IESCO tariff guide on 2026-11-26. The page cites S.R.O. No. 279(I)/2026, February 2026. The day 12 February 2026 is the date K-Electric states for the same SRO at https://ke.com.pk/faqs/. The gazette PDF itself was not retrieved.",
+      "The guide says only protected residential consumers receive one previous slab. This unprotected file charges every unit at the single row that contains total consumption.",
+      "This file does not decide whether a household is unprotected. The caller has to confirm that category.",
+      "Zero consumption is not inside a listed row. No fixed-charge row is selected for it, and the amount is not set to zero.",
+      "The fixed charge is rupees per kW of sanctioned load per month, not a flat amount per connection. Sanctioned load has to be supplied.",
+      "GST, fuel price adjustment, electricity duty, and TV fee are not in this schedule. Energy and fixed-charge figures are not a payable bill.",
+      "No effective end date was published on the page. A later notification is not included in this file."
+    ]
+  }
+}
