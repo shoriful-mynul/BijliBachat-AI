@@ -8,7 +8,7 @@ BijliBachat AI is a Pakistan-focused household electricity expense product for t
 
 Understand → Predict → Prevent → Optimize → Measure
 
-A household should be able to see its electricity position, anticipate the month's expense, stay clear of an avoidable slab change, choose a practical action, and look back at what happened. This repository currently implements the foundation for that journey. The overview uses clearly labeled sample data. Prediction, prevention, and measurement are not calculated yet.
+A household should be able to see its electricity position, anticipate the month's expense, stay clear of an avoidable slab change, choose a practical action, and look back at what happened. Parts 1 through 9 of that journey are implemented. The overview still uses clearly labeled sample data. A payable rupee total is not calculated, because the loaded tariffs omit GST, fuel price adjustment, electricity duty, and the TV fee.
 
 ## Technology stack
 
@@ -133,10 +133,9 @@ Done in this version:
 - Forecast at `/prediction`. It estimates cycle use from confirmed checkpoints when seven days of history and an explicit cycle start exist. The household budget stays in this browser. A payable rupee total is not calculated. See [docs/PREDICTION_BUDGET_INTELLIGENCE.md](docs/PREDICTION_BUDGET_INTELLIGENCE.md).
 - Action Plan at `/action-plan`. Appliance use and what-if schedules are calculated by the API. Records stay in this browser. Rupee savings are not shown. See [docs/APPLIANCE_ACTION_PLAN.md](docs/APPLIANCE_ACTION_PLAN.md).
 - History at `/history`. Confirmed checkpoints become measured cycles. A saved forecast can be compared with a finished cycle. Records stay in this browser. Rupee savings are not shown. See [docs/HISTORY_INSIGHTS_SAVINGS.md](docs/HISTORY_INSIGHTS_SAVINGS.md).
-- Placeholder pages for Action Plan and Consumption History. They describe the later work and do not show figures.
 - Reusable interface components, including trust and risk indicators.
 - FastAPI process health, environment-based CORS, and tests.
-- Backend contracts for a household profile, a meter checkpoint, trust labels, decimal amounts, and a public error body. No route accepts those household or meter records yet.
+- Backend contracts for a household profile, a meter checkpoint, trust labels, decimal amounts, and a public error body. Meter, forecast, appliance, and history routes calculate from records the browser sends. They do not keep those records.
 - A versioned tariff engine. IESCO residential energy and fixed-charge rows from the company's February 2026 tariff guide can be calculated. The result is not a payable bill, because taxes and fuel adjustment are not in that source. LESCO, K-Electric, and IESCO protected consumption stay unavailable. See [docs/TARIFF_ENGINE.md](docs/TARIFF_ENGINE.md).
 
 Not done:

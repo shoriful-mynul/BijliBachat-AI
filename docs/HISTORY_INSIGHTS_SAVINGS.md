@@ -44,7 +44,7 @@ Cycles whose durations differ by more than one day still show both totals, with 
 
 The arithmetic uses `Decimal`. Displayed kWh are quantized half-up to `0.001` after the exact result. Percentages are quantized half-up to `0.01`. Intermediate values are not rounded.
 
-A cycle is rejected when the checkpoints differ in meter, the end is not later, the register falls, the id or checkpoint pair already exists, or the period overlaps another cycle for that meter. Cycles that only touch at an endpoint are allowed.
+A cycle is rejected when the checkpoints differ in meter, the end is not later, the register falls, the id or checkpoint pair already exists, or the period overlaps another cycle for that meter. Comparing two saved cycles uses the same overlap rule. Cycles that only touch at an endpoint are allowed. An overlapping pair returns an unavailable comparison and no consumption figure.
 
 ## Trust and wording
 
@@ -60,7 +60,7 @@ The interface may say measured use was lower or higher than a previous cycle, a 
 - `bijlibachat.forecast-snapshots.v1`
 - `bijlibachat.history-baselines.v1`
 
-A refresh keeps them. Another device does not. A stored value that is not the expected shape, including a bad date, a bad number, or a duplicate id, is dropped. The API remains stateless: it calculates from what the browser sends and does not hold an independent copy.
+A refresh keeps them. Another device does not. A stored value that is not the expected shape is dropped. That includes a bad date, a duplicate reading id, a latest checkpoint that is not in the reading list, a register that fell, and a cycle whose stored kWh, duration, or daily average does not match its registers and timestamps. The browser does not rewrite those fields. The API remains the calculation authority, and it does not hold an independent copy.
 
 ## Rupee savings
 
@@ -71,4 +71,6 @@ No loaded tariff file contains GST, fuel price adjustment, electricity duty, and
 ```bash
 cd backend
 pytest
+cd ../frontend
+node --experimental-strip-types --test src/features/history/store.test.mjs
 ```

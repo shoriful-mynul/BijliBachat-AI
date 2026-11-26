@@ -170,6 +170,38 @@ def test_different_durations_warn_and_prefer_daily_average(client: TestClient) -
     assert "like-for-like" in body["duration_warning"]
 
 
+def test_overlapping_periods_are_not_compared(client: TestClient) -> None:
+    earlier = _cycle(CYCLE, _at(0), _at(30), "100.000", "250.000")
+    later = _cycle("99999999-9999-4999-8999-999999999999", _at(10), _at(40), "180.000", "260.000")
+    body = client.post("/api/history/cycles/compare", json={"earlier": earlier, "later": later}).json()
+    assert body["status"] == "unavailable"
+    assert body["usage_difference_kwh"] is None
+    assert body["earlier"] is None
+    assert body["later"] is None
+    assert "overlap" in body["detail"]
+
+
+def test_periods_that_touch_at_an_endpoint_can_be_compared(client: TestClient) -> None:
+    earlier = _cycle(CYCLE, _at(0), _at(30), "100.000", "250.000")
+    later = _cycle("99999999-9999-4999-8999-999999999999", _at(30), _at(60), "250.000", "370.000")
+    body = client.post("/api/history/cycles/compare", json={"earlier": earlier, "later": later}).json()
+    assert body["status"] == "calculated"
+    assert body["usage_difference_kwh"] == "30.000"
+    assert "overlap" not in body["detail"]
+
+
+def test_a_cycle_needs_two_different_checkpoints(client: TestClient) -> None:
+    shared = str(uuid4())
+    earlier = _cycle(CYCLE, _at(0), _at(30), "100.000", "250.000")
+    earlier["start_checkpoint_id"] = shared
+    earlier["end_checkpoint_id"] = shared
+    later = _cycle("99999999-9999-4999-8999-999999999999", _at(30), _at(60), "250.000", "370.000")
+    body = client.post("/api/history/cycles/compare", json={"earlier": earlier, "later": later}).json()
+    assert body["status"] == "unavailable"
+    assert body["usage_difference_kwh"] is None
+    assert "two different checkpoints" in body["detail"]
+
+
 def test_different_meters_are_not_compared(client: TestClient) -> None:
     earlier = _cycle(CYCLE, _at(0), _at(30), "100.000", "250.000", METER)
     later = _cycle("99999999-9999-4999-8999-999999999999", _at(30), _at(60), "10.000", "20.000", OTHER)
