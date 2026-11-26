@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FeaturePlaceholder } from "@/components/layout/feature-placeholder";
+import { CliffGuardView } from "@/features/meter/cliff-guard-view";
 import { navigationItem } from "@/lib/navigation";
 
 const page = navigationItem("/cliff-guard");
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function CliffGuardPage() {
-  return <FeaturePlaceholder item={page} />;
+  return <CliffGuardView />;
 }

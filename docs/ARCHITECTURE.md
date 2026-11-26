@@ -12,6 +12,7 @@ The frontend is a Next.js App Router application in `frontend/`.
 - `src/components/layout` is the shared shell: sidebar, header, mobile navigation, page container, and the API status line. Pages do not repeat the shell. The sidebar can collapse to icons. That choice is stored on this device, the same way as the theme.
 - `src/features/overview/demo-data.ts` holds the sample figures. Components render those authored values. They do not derive a bill, a slab, or a saving.
 - `src/features/bill-auditor/` is the review screen. It sends files and confirmed values to the API. It does not calculate a tariff.
+- `src/features/meter/` records checkpoints and shows Cliff Guard. Confirmed readings stay in this browser. The pages do not calculate consumption.
 - A short consistency check in that file fails the build if the authored unit total and the daily series drift apart. That check is a content guard, not a billing engine.
 
 The root layout stays statically renderable. Theme preference and the collapsed sidebar are applied by small inline scripts that read `localStorage` before paint, then by client controls. The server does not read those choices, so the layout does not depend on the request.
@@ -30,11 +31,12 @@ The backend is a FastAPI application in `backend/`. `create_app()` builds the pr
 - `app/core/` holds environment settings, including the optional Gemini key and model.
 - `app/schemas/` holds the contracts: health, household profile, meter checkpoint, trust status, decimal amounts, tariff requests and responses, bill extraction and audit, and `ErrorResponse`.
 - `app/tariffs/` holds dated JSON schedules, the availability notes for schedules that are not loaded, and the loader that rejects overlap, invalid bands, and synthetic production files.
-- `app/services/` holds application logic. The health report, `tariff_engine.py`, bill file checks, extraction parsing, the audit comparison, and the complaint template live here. The engine does not import a database client.
-- `app/integrations/gemini/` calls the Gemini SDK. Tests replace that client. Nothing else imports it to calculate money.
+- `app/services/` holds application logic. The health report, `tariff_engine.py`, bill checks, meter validation, and Cliff Guard live here. The engine does not import a database client.
+- `app/repositories/meter_ledger.py` is the storage boundary. The API uses a ledger that retains nothing.
+- `app/integrations/gemini/` calls the Gemini SDK for bill documents and meter photos. Tests replace that client. Nothing else imports it to calculate money.
 - `tests/` covers health, CORS, settings, the data contracts, tariff files, tariff calculations, and bill extraction with a fake Gemini client. Synthetic rates live in the tests and are labeled as fixtures.
 
-There is no `repositories/` package. Bills are not stored.
+Bills are not stored. The meter ledger package records nothing in this version.
 
 ### Contracts
 
@@ -52,7 +54,7 @@ Household and meter models describe records a later stage can store. No route ac
 
 - Persistence, when a stage asks for it, goes in `app/repositories/`. Services call that boundary. Routes do not.
 - Firebase Authentication, Cloud Firestore, and Firebase Storage, when a stage asks for them, go in `app/integrations/firebase/`. The app does not import or initialize them now.
-- Gemini bill extraction lives in `app/integrations/gemini/`. It may extract text. It does not calculate money, and it does not overwrite a Python result. Meter-photo OCR is not implemented.
+- Gemini bill extraction and meter-photo extraction live in `app/integrations/gemini/`. They may extract text. They do not calculate money or consumption, and they do not overwrite a Python result.
 - Dated tariff files and the calculation engine live in `app/tariffs/` and `app/services/tariff_engine.py`. The format, the IESCO rows that were verified, and the companies that remain unavailable are recorded in [TARIFF_ENGINE.md](TARIFF_ENGINE.md). The bill comparison rules are in [BILL_AUDITOR.md](BILL_AUDITOR.md).
 
 No database client or queue is created. The Gemini SDK is imported only when an extraction runs.
@@ -85,5 +87,5 @@ Gemini returns extracted fields. Uncertain fields stay unconfirmed until a perso
 | Layout, theme, sample copy | Frontend | Frontend |
 | Process health | FastAPI | FastAPI |
 | Tariff rates and bill maths | Python, in `app/services/tariff_engine.py`, from dated files only. No production payable total yet | Python only |
-| Bill OCR | Gemini extraction in `app/integrations/gemini/`, then a person confirms the form | Same boundary. Meter-photo OCR is still not implemented |
+| Bill and meter OCR | Gemini extraction in `app/integrations/gemini/`, then a person confirms the form | Same boundary. Photos are not stored |
 | Stored households and photos | Not implemented. Contracts exist; nothing is saved | Firestore and Storage, behind `app/repositories/` |

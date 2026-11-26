@@ -13,8 +13,6 @@ from app.integrations.gemini.errors import (
     GeminiTimeout,
     GeminiUnavailable,
 )
-from app.integrations.gemini.schema import EXTRACTION_INSTRUCTIONS, GEMINI_RESPONSE_SCHEMA
-
 logger = logging.getLogger("bijlibachat.gemini")
 
 
@@ -30,9 +28,26 @@ class GoogleGeminiExtractor:
         self._settings = settings
 
     def extract_document(self, content: bytes, mime_type: str) -> dict[str, object]:
+        from app.integrations.gemini.schema import EXTRACTION_INSTRUCTIONS, GEMINI_RESPONSE_SCHEMA
+
+        kind = "document" if mime_type == "application/pdf" else "image"
+        return self._extract(content, mime_type, kind, EXTRACTION_INSTRUCTIONS, GEMINI_RESPONSE_SCHEMA)
+
+    def extract_meter_photo(self, content: bytes, mime_type: str) -> dict[str, object]:
+        from app.integrations.gemini.meter_schema import METER_INSTRUCTIONS, METER_RESPONSE_SCHEMA
+
+        return self._extract(content, mime_type, "image", METER_INSTRUCTIONS, METER_RESPONSE_SCHEMA)
+
+    def _extract(
+        self,
+        content: bytes,
+        mime_type: str,
+        kind: str,
+        instructions: str,
+        schema: dict[str, object],
+    ) -> dict[str, object]:
         if not self._settings.gemini_api_key:
             raise GeminiNotConfigured()
-        kind = "document" if mime_type == "application/pdf" else "image"
         encoded = b64encode(content).decode("ascii")
         try:
             from google import genai
@@ -47,16 +62,16 @@ class GoogleGeminiExtractor:
             interaction = client.interactions.create(
                 model=self._settings.gemini_model,
                 input=[
-                    {"type": "text", "text": EXTRACTION_INSTRUCTIONS},
+                    {"type": "text", "text": instructions},
                     {"type": kind, "data": encoded, "mime_type": mime_type},
                 ],
                 response_format={
                     "type": "text",
                     "mime_type": "application/json",
-                    "schema": GEMINI_RESPONSE_SCHEMA,
+                    "schema": schema,
                 },
                 response_mime_type="application/json",
-                system_instruction=EXTRACTION_INSTRUCTIONS,
+                system_instruction=instructions,
                 store=False,
                 timeout=self._settings.gemini_timeout_seconds,
             )
