@@ -19,7 +19,7 @@ A household should be able to see its electricity position, anticipate the month
 | Backend | Python 3.11+, FastAPI, Pydantic v2, Uvicorn, google-genai 1.75 |
 | Tests | pytest, FastAPI's `TestClient` |
 
-Planned later, and not connected now: Firebase Authentication, Cloud Firestore, and Firebase Storage. Gemini is used only for bill extraction when `GEMINI_API_KEY` is set on the server. Meter-photo OCR is not implemented.
+Planned later, and not connected now: Firebase Authentication, Cloud Firestore, and Firebase Storage. Gemini is used for bill extraction and meter-photo extraction when `GEMINI_API_KEY` is set on the server. Confirmed meter checkpoints stay in the browser. The API does not keep them.
 
 ## Project structure
 
@@ -27,7 +27,7 @@ Planned later, and not connected now: Firebase Authentication, Cloud Firestore, 
 frontend/          Next.js application
   src/app/         Routes and the root layout
   src/components/  ui, layout, and dashboard components
-  src/features/    Overview sample content, settings, and Bill Auditor
+  src/features/    Overview sample content, settings, Bill Auditor, and meter checkpoints
   src/hooks/       Shared hooks
   src/lib/         Formatting, navigation, theme, health parsing
   src/styles/      Blue Hour tokens
@@ -36,7 +36,8 @@ backend/
   app/api/         HTTP routes and the public error response
   app/core/        Environment configuration
   app/schemas/     Health, household, meter, tariff, bill, trust, and error contracts
-  app/services/    Health, tariff engine, bill audit, and complaint draft
+  app/services/    Health, tariff engine, bill audit, meter checks, and Cliff Guard
+  app/repositories/  Meter storage boundary. The API ledger retains nothing
   app/integrations/gemini/  Document extraction client
   app/tariffs/     Dated tariff files and availability notes
   tests/           Contract, tariff, bill, config, and API tests
@@ -128,7 +129,8 @@ Done in this version:
 - Application shell with a grouped desktop sidebar, a compact header, and a mobile tab bar. `/` redirects to `/dashboard`.
 - Overview dashboard built from labeled sample data.
 - Bill Auditor at `/bill-auditor`. It uploads a bill, reviews an unconfirmed extraction, and compares confirmed amounts. See [docs/BILL_AUDITOR.md](docs/BILL_AUDITOR.md).
-- Placeholder pages for Cliff Guard, Meter Readings, Action Plan, and Consumption History. They describe the later work and do not show figures.
+- Meter Readings and Cliff Guard. A person confirms a typed or photographed register. Consumption is calculated by the API. No current tariff file provides a verified threshold, so the gauge is not shown. See [docs/METER_CAPTURE_CLIFF_GUARD.md](docs/METER_CAPTURE_CLIFF_GUARD.md).
+- Placeholder pages for Action Plan and Consumption History. They describe the later work and do not show figures.
 - Reusable interface components, including trust and risk indicators.
 - FastAPI process health, environment-based CORS, and tests.
 - Backend contracts for a household profile, a meter checkpoint, trust labels, decimal amounts, and a public error body. No route accepts those household or meter records yet.
@@ -136,7 +138,7 @@ Done in this version:
 
 Not done:
 
-- Sign-in, stored households, meter-photo OCR, a payable production bill, Cliff Guard rules, forecasting, budgets, savings calculations, and notifications. The sample overview does not call the tariff engine.
+- Sign-in, durable meter storage, a payable production bill, a verified Cliff Guard threshold, forecasting, budgets, savings calculations, and notifications. The sample overview does not call the tariff engine.
 
 The overview bill, units, chart, checkpoint, and illustrative saving are sample copy. They are marked **Demo data** and carry a trust chip. Cliff Guard shows **Needs verification** and does not state a unit threshold or a protected-consumer status.
 
@@ -149,6 +151,7 @@ The stage order is written in [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROA
 - [Architecture](docs/ARCHITECTURE.md)
 - [Tariff engine](docs/TARIFF_ENGINE.md)
 - [Bill auditor](docs/BILL_AUDITOR.md)
+- [Meter capture and Cliff Guard](docs/METER_CAPTURE_CLIFF_GUARD.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
 - [Development roadmap](docs/DEVELOPMENT_ROADMAP.md)
 - [Engineering brief](AGENTS.md)

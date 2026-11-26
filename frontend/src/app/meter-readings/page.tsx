@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FeaturePlaceholder } from "@/components/layout/feature-placeholder";
+import { MeterCapture } from "@/features/meter/meter-capture";
 import { navigationItem } from "@/lib/navigation";
 
 const page = navigationItem("/meter-readings");
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function MeterReadingsPage() {
-  return <FeaturePlaceholder item={page} />;
+  return <MeterCapture />;
 }

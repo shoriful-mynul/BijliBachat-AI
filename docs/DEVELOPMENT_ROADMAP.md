@@ -1,6 +1,6 @@
 # Development roadmap
 
-The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 5 are implemented. Parts 6 through 12 are not. No distribution company has a complete payable tariff.
+The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 6 are implemented. Parts 7 through 12 are not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
 
 ## 1. Project foundation and design system — done
 
@@ -13,7 +13,7 @@ The product is built in twelve parts. A later part is not started because a rout
 
 - Shared shell: grouped sidebar, header, and phone navigation.
 - `/` redirects to `/dashboard`.
-- Cliff Guard, Bill Auditor, Meter Readings, Action Plan, Consumption History, and Settings are reachable. Settings can change the theme on this device. Bill Auditor was a placeholder in this part and is implemented in Part 5. The other screens say the work is not available yet.
+- Cliff Guard, Bill Auditor, Meter Readings, Action Plan, Consumption History, and Settings are reachable. Settings can change the theme on this device. Bill Auditor, Cliff Guard, and Meter Readings were placeholders in this part. Bill Auditor is implemented in Part 5. Cliff Guard and Meter Readings are implemented in Part 6. The other screens say the work is not available yet.
 
 ## 3. Backend foundation and data architecture — done
 
@@ -40,12 +40,12 @@ The product is built in twelve parts. A later part is not started because a rout
 - A complaint draft is a local template. It is not submitted.
 - Bills are not stored. The details are in [BILL_AUDITOR.md](BILL_AUDITOR.md).
 
-## 6. Meter capture and Cliff Guard — not started
+## 6. Meter capture and Cliff Guard — done
 
-- Manual checkpoints and photo checkpoints, stored as checkpoints rather than a live feed.
-- A photo extraction stays `pending_confirmation` until a person accepts it.
-- Register-order and spike checks belong here, not in the current contract.
-- Cliff Guard shows distance to the next verified slab only after the tariff engine exists.
+- A person can type a register reading or review one taken from a meter photo. The photo draft stays unconfirmed, and an unreadable digit stays blank.
+- Confirmed checkpoints are validated for order, duplicates, a lower register, and a possible reading anomaly. The API does not keep them. This browser does, and a photo is not stored.
+- Consumption, average daily use, and an explicit billing cycle are calculated in Python. A safe daily allowance and a crossing date are calculated only when their inputs exist.
+- No loaded tariff file contains a verified Cliff Guard threshold. Slab edges are not used as one, so the gauge stays hidden and the page says the threshold needs verification. See [METER_CAPTURE_CLIFF_GUARD.md](METER_CAPTURE_CLIFF_GUARD.md).
 
 ## 7. Prediction and budget intelligence — not started
 
@@ -84,4 +84,4 @@ The product is built in twelve parts. A later part is not started because a rout
 
 ## Still out of scope
 
-Meter photo OCR, meter persistence, Cliff Guard rules, forecasting, budgets, appliance savings, sign-in, and notification delivery. Bill images are read temporarily and are not stored. A payable production bill is also still out of scope until a verified file contains every required component.
+Forecasting, budgets, appliance savings, sign-in, notification delivery, and durable meter storage. Meter photos and bill images are read temporarily and are not stored. A payable production bill and a verified Cliff Guard threshold are also still out of scope until a verified file contains them.

@@ -68,16 +68,12 @@ export const navigation: readonly NavigationItem[] = [
     href: "/cliff-guard",
     label: "Cliff Guard",
     shortLabel: "Cliff",
-    description: "A later check against a verified tariff. Nothing is being watched yet.",
+    description: "Checkpoints and the distance to a verified tariff threshold, when one exists.",
     icon: Shield,
     group: "prevent",
     mobile: "tab",
     mobileOrder: 2,
-    status: "placeholder",
-    purpose:
-      "Households will be able to watch the current cycle against a tariff threshold that has been checked and dated.",
-    later:
-      "No threshold is shown, because none is loaded. Protected-consumer status is not assumed. This page is not a live warning.",
+    status: "ready",
   },
   {
     href: "/bill-auditor",
@@ -109,16 +105,12 @@ export const navigation: readonly NavigationItem[] = [
     href: "/meter-readings",
     label: "Meter Readings",
     shortLabel: "Readings",
-    description: "Manual and photo checkpoints later. This is not a live meter.",
+    description: "Manual and photo checkpoints kept on this device. This is not a live meter.",
     icon: Gauge,
     group: "measure",
     mobile: "tab",
     mobileOrder: 3,
-    status: "placeholder",
-    purpose:
-      "You will be able to type a meter reading, or confirm one from a photo of the meter.",
-    later:
-      "These are checkpoints, not a live feed. Nothing is stored in this version. The overview includes one labeled sample checkpoint only.",
+    status: "ready",
   },
   {
     href: "/history",

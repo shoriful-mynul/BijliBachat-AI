@@ -5,6 +5,7 @@ from app.api.errors import install_error_handlers
 from app.api.router import api_router
 from app.core.config import Settings, get_settings
 from app.schemas.errors import ErrorResponse
+from app.repositories.meter_ledger import NotRetainedLedger
 from app.tariffs.loader import load_production_catalog
 
 
@@ -19,8 +20,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "The health route reports the process. Tariff routes resolve a dated "
             "configuration and calculate only the components that configuration "
             "verifies. Bill routes read a document with Gemini when a server key "
-            "is configured, then compare values a person confirmed. Household and "
-            "meter contracts are not exposed as routes. Field validation errors keep "
+            "is configured, then compare values a person confirmed. Meter routes "
+            "validate checkpoints and calculate Cliff Guard from readings the caller "
+            "sends. Those readings are not retained. Field validation errors keep "
             "FastAPI's detail list. Unexpected failures use ErrorResponse and do "
             "not include the exception text."
         ),
@@ -33,6 +35,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = resolved
     app.state.tariff_catalog = catalog
+    app.state.meter_ledger = NotRetainedLedger()
     install_error_handlers(app)
     app.add_middleware(
         CORSMiddleware,
