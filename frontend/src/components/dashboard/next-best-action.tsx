@@ -1,5 +1,6 @@
 import { Shirt } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
 import { demoOverview } from "@/features/overview/demo-data";
@@ -33,8 +34,11 @@ export function NextBestAction() {
       </p>
       <p className="ice-muted mt-2 text-sm leading-6">
         Sample illustration only. No saving has been calculated for this
-        household.
+        household. Rupee savings are not available from the loaded tariffs.
       </p>
+      <div className="mt-4">
+        <Button href="/action-plan">Open the action plan</Button>
+      </div>
     </Card>
   );
 }
