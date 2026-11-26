@@ -6,7 +6,7 @@ BijliBachat AI is a two-part application in one repository. The browser presents
 
 The frontend is a Next.js App Router application in `frontend/`.
 
-- `src/app` defines routes. `/` redirects to `/dashboard`. Overview keeps its labeled sample cards and adds a forecast summary from checkpoints on this device. Bill Auditor, Cliff Guard, Meter Readings, Forecast, Action Plan, and History are implemented. Settings can change the theme on this device.
+- `src/app` defines routes. `/` redirects to `/dashboard`. Overview keeps its labeled sample cards and adds a forecast summary from checkpoints on this device. Bill Auditor, Cliff Guard, Meter Readings, Forecast, Action Plan, and History are implemented. Settings can change the language and the theme on this device.
 - `src/lib/navigation.ts` is the only route list. The desktop sidebar, mobile tabs, and More sheet read it. Journey groups are Understand, Prevent, Optimize, and Measure. Settings stays with the sample profile, not inside those groups.
 - `src/components/ui` is a small local component set. There is no third-party component kit.
 - `src/components/layout` is the shared shell: sidebar, header, mobile navigation, page container, and the API status line. Pages do not repeat the shell. The sidebar can collapse to icons. That choice is stored on this device, the same way as the theme.
@@ -16,9 +16,10 @@ The frontend is a Next.js App Router application in `frontend/`.
 - `src/features/prediction/` asks the API for a cycle forecast and keeps a household budget in this browser. It does not price a bill.
 - `src/features/appliances/` keeps appliance records in this browser and asks the API for consumption and scenarios. It does not price a saving.
 - `src/features/history/` keeps measured cycles, saved forecasts, and kWh targets in this browser. It asks the API to compare them and does not price a saving.
+- `src/lib/i18n/` holds the English and Urdu dictionaries and the language storage key `bijlibachat.language.v1`. Components call one translation function. Pages are not copied per language. Urdu sets `lang="ur"` and `dir="rtl"`. Chart plots stay left-to-right. The details are in [LOCALIZATION_ACCESSIBILITY.md](LOCALIZATION_ACCESSIBILITY.md).
 - A short consistency check in that file fails the build if the authored unit total and the daily series drift apart. That check is a content guard, not a billing engine.
 
-The root layout stays statically renderable. Theme preference and the collapsed sidebar are applied by small inline scripts that read `localStorage` before paint, then by client controls. The server does not read those choices, so the layout does not depend on the request.
+The root layout stays statically renderable. Theme, language, and the collapsed sidebar are applied by small inline scripts that read `localStorage` before paint, then by client controls. The server does not read those choices, so the layout does not depend on the request. Language does not write the theme key.
 
 `NEXT_PUBLIC_API_URL` is the only frontend environment value. The service-status footer calls `GET /api/health` and checks the JSON shape before showing it. A missing URL, a network failure, or an unexpected body is shown as unavailable.
 

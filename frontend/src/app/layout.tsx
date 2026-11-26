@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Manrope, Noto_Nastaliq_Urdu } from "next/font/google";
 import { AppShell } from "@/components/layout/app-shell";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { LanguageProvider } from "@/components/i18n/language-provider";
+import { languageInitScript } from "@/lib/i18n/language";
 import { sidebarInitScript } from "@/lib/sidebar";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
@@ -57,11 +59,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: languageInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: sidebarInitScript }} />
       </head>
-      <body className="min-h-dvh bg-background font-sans text-foreground">
+      <body className="min-h-dvh overflow-x-clip bg-background font-sans text-foreground">
         <ThemeProvider>
-          <AppShell>{children}</AppShell>
+          <LanguageProvider>
+            <AppShell>{children}</AppShell>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Gauge } from "lucide-react";
+import { LocalizedNotice, SourceText } from "@/components/i18n/source-text";
+import { useI18n } from "@/components/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
@@ -14,6 +16,7 @@ import { householdId, loadReadings, rememberReading, type StoredReading } from "
 import type { CliffReport, MeterDraft, ValidationResult } from "./types";
 
 export function MeterCapture() {
+  const { t } = useI18n();
   const apiBase = getApiBaseUrl();
   const abortRef = useRef<AbortController | null>(null);
   const [readings, setReadings] = useState<StoredReading[]>([]);
@@ -156,57 +159,57 @@ export function MeterCapture() {
     <div className="flex flex-col gap-5">
       <EmptyState
         icon={Gauge}
-        title="Checkpoints, not a live meter"
-        description="Enter a register reading, or review one taken from a photo. A photo reading stays unconfirmed until you accept it. Photos are not saved. Confirmed checkpoints stay in this browser only."
+        title={t("meter.introTitle")}
+        description={t("meter.intro")}
       />
       <Card as="section" aria-labelledby="manual-heading">
         <h2 id="manual-heading" className="font-display text-lg font-semibold">
-          Record a checkpoint
+          {t("meter.recordTitle")}
         </h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Input label="Register (kWh)" inputMode="decimal" value={register} onChange={(event) => { setRegister(event.target.value); setReview(null); }} hint={draft ? confidenceHint(draft) : "Type the number on the meter."} />
-          <Input label="Reading time" type="datetime-local" value={readAt} onChange={(event) => setReadAt(event.target.value)} />
-          <Input label="Meter number" value={meterReference} onChange={(event) => setMeterReference(event.target.value)} hint="Optional. Leave blank when the meter number is not known." />
+          <Input label={t("meter.register")} required inputMode="decimal" value={register} onChange={(event) => { setRegister(event.target.value); setReview(null); }} hint={draft ? confidenceHint(draft) : t("meter.registerHint")} />
+          <Input label={t("meter.time")} required type="datetime-local" value={readAt} onChange={(event) => setReadAt(event.target.value)} />
+          <Input label={t("meter.number")} value={meterReference} onChange={(event) => setMeterReference(event.target.value)} hint={t("meter.numberHint")} />
         </div>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
           <input
-            aria-label="Meter photo"
+            aria-label={t("meter.photo")}
             type="file"
             accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
-            className="block min-h-12 w-full text-sm file:mr-3 file:min-h-12 file:rounded-xl file:border-0 file:bg-aqua file:px-4 file:font-semibold file:text-ink"
+            className="block min-h-12 w-full text-sm file:me-3 file:min-h-12 file:rounded-xl file:border-0 file:bg-aqua file:px-4 file:font-semibold file:text-ink"
             onChange={(event) => setFile(event.target.files?.[0] ?? null)}
           />
           <Button type="button" variant="secondary" className="shrink-0 whitespace-nowrap" disabled={!file || !apiBase || busy !== null} onClick={upload}>
-            Read photo
+            {t("meter.readPhoto")}
           </Button>
         </div>
         {busy === "upload" ? (
           <div className="mt-4 flex flex-col gap-3">
-            <LoadingState label="Reading the meter photo" />
+            <LoadingState label={t("meter.readingPhoto")} />
             <Button type="button" variant="ghost" onClick={() => abortRef.current?.abort()}>
-              Cancel reading
+              {t("meter.cancel")}
             </Button>
           </div>
         ) : null}
         {draft ? (
-          <p className="mt-3 text-sm leading-6">
-            Extracted, not confirmed. {draft.requires_manual_review ? "This display needs a manual review before you save it." : "Check the digits, then confirm."}
+          <p className="mt-3 text-sm leading-6" role="status">
+            {t("meter.extracted")} {draft.requires_manual_review ? t("meter.needsReview") : t("meter.checkDigits")}
           </p>
         ) : null}
-        {error ? <p className="mt-3 text-sm" role="alert">{error}</p> : null}
+        {error ? <p className="mt-3 text-sm" role="alert"><LocalizedNotice value={error} /></p> : null}
         {review && !review.accepted ? (
           <div className="mt-4 rounded-xl border border-line p-3">
-            <p className="text-sm leading-6">{review.explanation}</p>
+            <p className="text-sm leading-6"><SourceText>{review.explanation}</SourceText></p>
             {review.outcome === "needs_review" ? (
               <Button type="button" className="mt-3" onClick={() => save("keep_as_submitted")}>
-                Keep this reading as entered
+                {t("meter.keep")}
               </Button>
             ) : null}
           </div>
         ) : null}
         <div className="mt-4">
           <Button type="button" disabled={!register.trim() || !readAt || !apiBase || busy !== null} onClick={() => save()}>
-            {busy === "save" ? "Checking" : "Confirm checkpoint"}
+            {busy === "save" ? t("meter.checking") : t("meter.confirm")}
           </Button>
         </div>
       </Card>
@@ -222,15 +225,14 @@ export function ReadingList({
   readings: StoredReading[];
   intervals?: { reading_id: string; consumed_kwh: string | null; trust_status: string; detail: string }[];
 }) {
+  const { t } = useI18n();
   return (
     <Card as="section" aria-labelledby="history-heading">
       <h2 id="history-heading" className="font-display text-lg font-semibold">
-        Checkpoints on this device
+        {t("meter.listTitle")}
       </h2>
-      <p className="mt-2 text-sm leading-6 text-muted">
-        These are readings you confirmed. They are not a continuous record, and they are not on the server.
-      </p>
-      {readings.length === 0 ? <p className="mt-4 text-sm">No checkpoints yet.</p> : null}
+      <p className="mt-2 text-sm leading-6 text-muted">{t("meter.listHelp")}</p>
+      {readings.length === 0 ? <p className="mt-4 text-sm">{t("meter.empty")}</p> : null}
       <div className="mt-4 flex flex-col gap-3">
         {readings.map((reading) => {
           return (
@@ -241,18 +243,18 @@ export function ReadingList({
               </div>
               <p className="mt-2 font-mono text-sm">
                 {reading.register_kwh} kWh
-                {reading.meter_reference ? ` · ${reading.meter_reference}` : " · meter number not recorded"}
+                {reading.meter_reference ? <> · <bdi>{reading.meter_reference}</bdi></> : ` · ${t("meter.numberMissing")}`}
               </p>
               {intervals
                 .filter((item) => item.reading_id === reading.id)
                 .map((item) => (
                   <p key={item.reading_id} className="mt-1 text-sm leading-6">
-                    {item.consumed_kwh ? `${item.consumed_kwh} kWh since the previous checkpoint. ` : ""}
-                    {item.detail}
+                    {item.consumed_kwh ? `${t("meter.sincePrevious", { kwh: item.consumed_kwh })} ` : ""}
+                    <SourceText>{item.detail}</SourceText>
                   </p>
                 ))}
               {reading.warnings.map((warning) => (
-                <p key={warning} className="mt-2 text-sm leading-6">{warning}</p>
+                <p key={warning} className="mt-2 text-sm leading-6"><SourceText>{warning}</SourceText></p>
               ))}
             </article>
           );

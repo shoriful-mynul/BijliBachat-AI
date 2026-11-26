@@ -26,7 +26,7 @@ Uncertain OCR fields stay unconfirmed until a person accepts them.
 
 ## Numbers people see
 
-Every important number shows its trust status: Verified, Calculated, Extracted, Estimated, or Unavailable.
+Every important number shows its trust status: Verified, Calculated, Extracted, Estimated, or Unavailable. The stored and API values stay those English names. A visible label may be translated. Do not translate a trust value before sending it to the API.
 
 Risk uses color, an icon, and a word together: Safe, Approaching, High risk, or Needs verification.
 
@@ -38,7 +38,7 @@ When a bill and the household record disagree, the words are "Possible mismatch"
 
 Do not put secrets or API keys in frontend code, committed env files, or logs. Validate external data and user input at the boundary that receives it.
 
-Keep the interface accessible and usable at 390px, about 768px, and 1440px. Interactive targets are at least 48px.
+Keep the interface accessible and usable at 390px, about 768px, and 1440px. Interactive targets are at least 48px. English and Urdu share the same pages. Urdu is right-to-left. Language is stored only in `bijlibachat.language.v1`. Do not add a translation API or a second copy of a page for Urdu.
 
 ## Where work goes
 

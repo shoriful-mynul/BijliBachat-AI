@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/components/i18n/language-provider";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
@@ -20,11 +23,12 @@ export function StatCard({
   demo = false,
   valueClassName,
 }: StatCardProps) {
+  const { t } = useI18n();
   return (
     <Card as="article" className="flex h-full flex-col">
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm text-muted">{label}</p>
-        {demo ? <Badge>Demo data</Badge> : null}
+        {demo ? <Badge>{t("common.demoData")}</Badge> : null}
       </div>
       <p
         className={

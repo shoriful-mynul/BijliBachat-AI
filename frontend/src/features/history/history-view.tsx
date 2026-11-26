@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { History } from "lucide-react";
+import { LocalizedNotice, SourceText } from "@/components/i18n/source-text";
+import { useI18n } from "@/components/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
@@ -25,6 +27,7 @@ import {
 import type { BaselineComparison, CycleComparison, CycleValidation, ForecastComparison, InsightReport } from "./types";
 
 export function HistoryView() {
+  const { t } = useI18n();
   const apiBase = getApiBaseUrl();
   const [ready, setReady] = useState(false);
   const [readings, setReadings] = useState<StoredReading[]>([]);
@@ -225,11 +228,11 @@ export function HistoryView() {
 
   const options = readings.map((item) => ({
     value: item.id,
-    label: `${item.register_kwh} kWh · ${item.read_at.slice(0, 10)} · ${item.meter_reference ?? "No meter"}`,
+    label: `${item.register_kwh} kWh · ${item.read_at.slice(0, 10)} · ${item.meter_reference ?? t("history.noMeter")}`,
   }));
   const cycleOptions = cycles.map((item) => ({
     value: item.id,
-    label: `${item.started_at.slice(0, 10)} to ${item.ended_at.slice(0, 10)} · ${item.actual_kwh} kWh`,
+    label: `${item.started_at.slice(0, 10)} ${t("common.to")} ${item.ended_at.slice(0, 10)} · ${item.actual_kwh} kWh`,
   }));
   const pkr = insights?.pkr_impact ?? comparison?.pkr_impact ?? forecastResult?.pkr_impact;
 
@@ -237,36 +240,36 @@ export function HistoryView() {
     <div className="flex flex-col gap-5">
       <EmptyState
         icon={History}
-        title="Measured use from confirmed checkpoints"
-        description="A cycle needs two confirmed readings from the same meter. A forecast stays an estimate. A lower figure is measured use, not a rupee saving and not proof that an appliance caused it."
+        title={t("history.introTitle")}
+        description={t("history.intro")}
       />
-      {!apiBase ? <p role="alert">The API address is not configured.</p> : null}
-      {error ? <p role="alert">{error}</p> : null}
-      {message ? <p className="text-sm leading-6">{message}</p> : null}
+      {!apiBase ? <p role="alert">{t("common.apiMissing")}</p> : null}
+      {error ? <p role="alert"><LocalizedNotice value={error} /></p> : null}
+      {message ? <p className="text-sm leading-6"><LocalizedNotice value={message} /></p> : null}
 
       <Card as="section" aria-labelledby="overview-heading">
         <h2 id="overview-heading" className="font-display text-lg font-semibold">
-          What has been measured
+          {t("history.measuredTitle")}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-muted">Kept only in this browser. This is not a cloud backup, and another device cannot see it.</p>
+        <p className="mt-2 text-sm leading-6 text-muted">{t("history.local")}</p>
         {insights && insights.cycle_count > 0 ? (
           <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <Metric label="Recorded cycles" value={String(insights.cycle_count)} />
-            <Metric label="Latest measured cycle" value={insights.latest_cycle_kwh ? `${insights.latest_cycle_kwh} kWh` : "Unavailable"} />
-            <Metric label="Latest average per day" value={insights.latest_average_daily_kwh ? `${insights.latest_average_daily_kwh} kWh` : "Unavailable"} />
+            <Metric label={t("history.count")} value={String(insights.cycle_count)} />
+            <Metric label={t("history.latest")} value={insights.latest_cycle_kwh ? `${insights.latest_cycle_kwh} kWh` : t("common.unavailable")} />
+            <Metric label={t("history.latestDaily")} value={insights.latest_average_daily_kwh ? `${insights.latest_average_daily_kwh} kWh` : t("common.unavailable")} />
           </div>
         ) : (
-          <p className="mt-4 text-sm leading-6">No measured cycles yet. Add one from two confirmed meter checkpoints. No sample history is included.</p>
+          <p className="mt-4 text-sm leading-6">{t("history.empty")}</p>
         )}
         {insights && insights.insights.length > 0 ? (
           <ul className="mt-4 flex flex-col gap-3">
             {insights.insights.map((item) => (
               <li key={item.code}>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold">{item.title}</h3>
+                  <h3 className="text-sm font-semibold"><SourceText>{item.title}</SourceText></h3>
                   <DataTrustChip status={chip(item.trust_status)} />
                 </div>
-                <p className="mt-1 text-sm leading-6">{item.detail}</p>
+                <p className="mt-1 text-sm leading-6"><SourceText>{item.detail}</SourceText></p>
               </li>
             ))}
           </ul>
@@ -275,32 +278,30 @@ export function HistoryView() {
 
       <Card as="section" aria-labelledby="cycles-heading">
         <h2 id="cycles-heading" className="font-display text-lg font-semibold">
-          Billing cycles
+          {t("history.cyclesTitle")}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-muted">
-          The registers shown here are the ones accepted when the cycle was saved. Deleting a cycle does not delete the meter checkpoints.
-        </p>
+        <p className="mt-2 text-sm leading-6 text-muted">{t("history.cyclesHelp")}</p>
         {readings.length < 2 ? (
-          <p className="mt-4 text-sm leading-6">Confirm at least two meter checkpoints before a cycle can be saved.</p>
+          <p className="mt-4 text-sm leading-6">{t("history.needTwo")}</p>
         ) : (
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <Select label="Starting checkpoint" value={startId} onChange={(event) => setStartId(event.target.value)} options={[{ value: "", label: "Choose a checkpoint" }, ...options]} />
-            <Select label="Ending checkpoint" value={endId} onChange={(event) => setEndId(event.target.value)} options={[{ value: "", label: "Choose a later checkpoint" }, ...options]} />
+            <Select label={t("history.startCheckpoint")} value={startId} onChange={(event) => setStartId(event.target.value)} options={[{ value: "", label: t("history.chooseCheckpoint") }, ...options]} />
+            <Select label={t("history.endCheckpoint")} value={endId} onChange={(event) => setEndId(event.target.value)} options={[{ value: "", label: t("history.chooseLater") }, ...options]} />
           </div>
         )}
         <div className="mt-4">
-          <Button type="button" onClick={() => void saveCycle()}>{editingId ? "Save cycle" : "Create cycle"}</Button>
+          <Button type="button" onClick={() => void saveCycle()}>{editingId ? t("history.saveCycle") : t("history.createCycle")}</Button>
         </div>
         {cycles.length === 0 ? null : (
           <div className="mt-5 overflow-x-auto">
-            <table className="w-full min-w-0 text-left text-sm">
-              <caption className="sr-only">Saved billing cycles</caption>
+            <table className="w-full min-w-0 text-start text-sm">
+              <caption className="sr-only">{t("history.tableCaption")}</caption>
               <thead>
                 <tr>
-                  <th scope="col" className="py-2 font-medium">Dates</th>
-                  <th scope="col" className="py-2 font-medium">Days</th>
-                  <th scope="col" className="py-2 font-medium">Measured kWh</th>
-                  <th scope="col" className="py-2 font-medium">Meter</th>
+                  <th scope="col" className="py-2 font-medium">{t("history.dates")}</th>
+                  <th scope="col" className="py-2 font-medium">{t("history.days")}</th>
+                  <th scope="col" className="py-2 font-medium">{t("history.measuredKwh")}</th>
+                  <th scope="col" className="py-2 font-medium">{t("history.meter")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -309,40 +310,40 @@ export function HistoryView() {
                   const baseline = baselineResults[cycle.id];
                   return (
                     <tr key={cycle.id} className="border-t border-line align-top">
-                      <td className="py-3 pr-3">
+                      <td className="py-3 pe-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span>{cycle.started_at.slice(0, 10)} to {cycle.ended_at.slice(0, 10)}</span>
+                          <span>{cycle.started_at.slice(0, 10)} {t("common.to")} {cycle.ended_at.slice(0, 10)}</span>
                           <DataTrustChip status="calculated" />
                         </div>
-                        {missing ? <p className="mt-1 text-sm leading-6">A source checkpoint is no longer in the meter list. The registers below are the ones saved with this cycle.</p> : null}
+                        {missing ? <p className="mt-1 text-sm leading-6">{t("history.missingCheckpoint")}</p> : null}
                         <div className="mt-2 flex flex-wrap gap-2">
-                          <Button type="button" variant="secondary" onClick={() => { setEditingId(cycle.id); setStartId(cycle.start_checkpoint_id); setEndId(cycle.end_checkpoint_id); }}>Change checkpoints</Button>
+                          <Button type="button" variant="secondary" onClick={() => { setEditingId(cycle.id); setStartId(cycle.start_checkpoint_id); setEndId(cycle.end_checkpoint_id); }}>{t("history.change")}</Button>
                           {pendingDelete === cycle.id ? (
                             <>
-                              <Button type="button" onClick={() => removeCycle(cycle.id)}>Confirm delete</Button>
-                              <Button type="button" variant="ghost" onClick={() => setPendingDelete(null)}>Keep it</Button>
+                              <Button type="button" onClick={() => removeCycle(cycle.id)}>{t("history.confirmDelete")}</Button>
+                              <Button type="button" variant="ghost" onClick={() => setPendingDelete(null)}>{t("history.keep")}</Button>
                             </>
                           ) : (
-                            <Button type="button" variant="ghost" onClick={() => setPendingDelete(cycle.id)}>Delete cycle</Button>
+                            <Button type="button" variant="ghost" onClick={() => setPendingDelete(cycle.id)}>{t("history.delete")}</Button>
                           )}
                         </div>
                         <div className="mt-3 max-w-xs">
                           <Input
-                            label="Your kWh target for this cycle"
+                            label={t("history.target")}
                             inputMode="decimal"
                             value={targetDrafts[cycle.id] ?? ""}
                             onChange={(event) => setTargetDrafts({ ...targetDrafts, [cycle.id]: event.target.value })}
-                            hint="A figure you enter. Not a verified baseline."
+                            hint={t("history.targetHint")}
                           />
                           <div className="mt-2">
-                            <Button type="button" variant="secondary" onClick={() => void saveTarget(cycle)}>Compare with target</Button>
+                            <Button type="button" variant="secondary" onClick={() => void saveTarget(cycle)}>{t("history.compareTarget")}</Button>
                           </div>
-                          {baseline ? <p className="mt-2 text-sm leading-6">{baseline.detail}</p> : null}
+                          {baseline ? <p className="mt-2 text-sm leading-6"><SourceText>{baseline.detail}</SourceText></p> : null}
                         </div>
                       </td>
                       <td className="py-3 font-mono">{cycle.duration_days}</td>
                       <td className="py-3 font-mono">{cycle.actual_kwh}</td>
-                      <td className="py-3">{cycle.meter_reference}</td>
+                      <td className="py-3"><bdi>{cycle.meter_reference}</bdi></td>
                     </tr>
                   );
                 })}
@@ -355,7 +356,7 @@ export function HistoryView() {
       <Card as="section" aria-labelledby="chart-heading">
         <div className="flex flex-wrap items-center gap-2">
           <h2 id="chart-heading" className="font-display text-lg font-semibold">
-            Measured use by cycle
+            {t("history.chartTitle")}
           </h2>
           <DataTrustChip status={cycles.length > 0 ? "calculated" : "unavailable"} />
         </div>
@@ -364,59 +365,61 @@ export function HistoryView() {
             <HistoryChart cycles={cycles} forecasts={forecastMatches} />
           </div>
         ) : (
-          <p className="mt-3 text-sm leading-6">The chart stays empty until a cycle is saved. Missing cycles are not filled in.</p>
+          <p className="mt-3 text-sm leading-6" role="status">{t("history.chartEmpty")}</p>
         )}
       </Card>
 
       <Card as="section" aria-labelledby="compare-heading">
         <h2 id="compare-heading" className="font-display text-lg font-semibold">
-          Compare two cycles
+          {t("history.compareTitle")}
         </h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Select label="Earlier cycle" value={earlierId} onChange={(event) => setEarlierId(event.target.value)} options={[{ value: "", label: "Choose a cycle" }, ...cycleOptions]} />
-          <Select label="Later cycle" value={laterId} onChange={(event) => setLaterId(event.target.value)} options={[{ value: "", label: "Choose a later cycle" }, ...cycleOptions]} />
+          <Select label={t("history.earlier")} value={earlierId} onChange={(event) => setEarlierId(event.target.value)} options={[{ value: "", label: t("history.chooseCycle") }, ...cycleOptions]} />
+          <Select label={t("history.later")} value={laterId} onChange={(event) => setLaterId(event.target.value)} options={[{ value: "", label: t("history.chooseLaterCycle") }, ...cycleOptions]} />
         </div>
         <div className="mt-4">
-          <Button type="button" onClick={() => void compareSelected()}>Compare cycles</Button>
+          <Button type="button" onClick={() => void compareSelected()}>{t("history.compare")}</Button>
         </div>
         {comparison ? (
           <div className="mt-4">
             <DataTrustChip status={comparison.status === "calculated" ? "calculated" : "unavailable"} />
-            <p className="mt-2 text-sm leading-6">{comparison.detail}</p>
-            {comparison.duration_warning ? <p className="mt-2 text-sm leading-6">{comparison.duration_warning}</p> : null}
+            <p className="mt-2 text-sm leading-6"><SourceText>{comparison.detail}</SourceText></p>
+            {comparison.duration_warning ? <p className="mt-2 text-sm leading-6"><SourceText>{comparison.duration_warning}</SourceText></p> : null}
             {comparison.earlier && comparison.later ? (
               <p className="mt-2 font-mono text-sm">
-                Earlier {comparison.earlier.actual_kwh} kWh over {comparison.earlier.duration_days} days.
-                Later {comparison.later.actual_kwh} kWh over {comparison.later.duration_days} days.
+                {t("history.compareLine", {
+                  earlier: comparison.earlier.actual_kwh,
+                  earlierDays: comparison.earlier.duration_days,
+                  later: comparison.later.actual_kwh,
+                  laterDays: comparison.later.duration_days,
+                })}
               </p>
             ) : null}
           </div>
         ) : (
-          <p className="mt-4 text-sm leading-6">Choose two cycles from the same meter. Different lengths are shown with a warning.</p>
+          <p className="mt-4 text-sm leading-6">{t("history.compareEmpty")}</p>
         )}
       </Card>
 
       <Card as="section" aria-labelledby="forecast-heading">
         <h2 id="forecast-heading" className="font-display text-lg font-semibold">
-          Forecast and what was measured
+          {t("history.forecastTitle")}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-muted">
-          A saved forecast is a previous estimate. Comparing it with a finished cycle does not score the model.
-        </p>
+        <p className="mt-2 text-sm leading-6 text-muted">{t("history.forecastHelp")}</p>
         {snapshots.length === 0 ? (
-          <p className="mt-4 text-sm leading-6">Save a forecast from the Forecast page when an estimate is available. An unavailable forecast is not saved.</p>
+          <p className="mt-4 text-sm leading-6">{t("history.noSnapshot")}</p>
         ) : (
           <ul className="mt-4 flex flex-col gap-3">
             {snapshots.map((snapshot) => (
               <li key={snapshot.id} className="rounded-xl border border-line p-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold">{snapshot.cycle_started_on} to {snapshot.cycle_ends_on}</h3>
+                  <h3 className="text-sm font-semibold">{snapshot.cycle_started_on} {t("common.to")} {snapshot.cycle_ends_on}</h3>
                   <DataTrustChip status="estimated" />
                 </div>
-                <p className="mt-2 font-mono text-sm">Saved forecast {snapshot.projected_cycle_kwh} kWh</p>
-                <p className="mt-1 text-sm leading-6">{snapshot.detail}</p>
+                <p className="mt-2 font-mono text-sm">{t("history.savedForecastLine", { kwh: snapshot.projected_cycle_kwh })}</p>
+                <p className="mt-1 text-sm leading-6"><SourceText>{snapshot.detail}</SourceText></p>
                 <div className="mt-3">
-                  <Button type="button" variant="secondary" onClick={() => void compareSnapshot(snapshot)}>Compare with the measured cycle</Button>
+                  <Button type="button" variant="secondary" onClick={() => void compareSnapshot(snapshot)}>{t("history.compareSnapshot")}</Button>
                 </div>
               </li>
             ))}
@@ -428,10 +431,13 @@ export function HistoryView() {
               <DataTrustChip status={chip(forecastResult.actual_trust_status)} />
               <DataTrustChip status={chip(forecastResult.forecast_trust_status)} />
             </div>
-            <p className="mt-2 text-sm leading-6">{forecastResult.detail}</p>
+            <p className="mt-2 text-sm leading-6"><SourceText>{forecastResult.detail}</SourceText></p>
             {forecastResult.actual_kwh ? (
               <p className="mt-2 font-mono text-sm">
-                Measured {forecastResult.actual_kwh} kWh. Forecast {forecastResult.forecast_kwh} kWh.
+                {t("history.measuredVsForecast", {
+                  actual: forecastResult.actual_kwh,
+                  forecast: forecastResult.forecast_kwh ?? "",
+                })}
               </p>
             ) : null}
           </div>
@@ -441,15 +447,15 @@ export function HistoryView() {
       <Card as="section" aria-labelledby="pkr-heading">
         <div className="flex flex-wrap items-center gap-2">
           <h2 id="pkr-heading" className="font-display text-lg font-semibold">
-            Rupee savings
+            {t("history.pkrTitle")}
           </h2>
           <DataTrustChip status="unavailable" />
         </div>
         <p className="mt-3 text-sm leading-6">
-          {pkr?.reason ?? "PKR savings are unavailable until a complete payable tariff can price both periods. No electricity rate is assumed."}
+          {pkr?.reason ? <SourceText>{pkr.reason}</SourceText> : t("history.pkrFallback")}
         </p>
         {pkr && pkr.missing_components.length > 0 ? (
-          <p className="mt-2 text-sm leading-6 text-muted">Missing from the loaded tariffs: {pkr.missing_components.join(", ")}.</p>
+          <p className="mt-2 text-sm leading-6 text-muted">{t("common.missingTariffs", { items: pkr.missing_components.join(", ") })}</p>
         ) : null}
       </Card>
     </div>

@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/components/i18n/language-provider";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
@@ -6,35 +9,36 @@ import { demoOverview } from "@/features/overview/demo-data";
 import { formatGrouped } from "@/lib/format";
 
 export function RecentReading() {
+  const { t } = useI18n();
   const { reading } = demoOverview;
 
   return (
     <Card className="h-full">
       <SectionHeader
-        title="Latest manual checkpoint"
-        description="Submitted by the household. This is not a live reading from the meter."
+        title={t("dashboard.readingTitle")}
+        description={t("dashboard.readingDescription")}
         actions={
           <>
-            <Badge>Demo data</Badge>
+            <Badge>{t("common.demoData")}</Badge>
             <DataTrustChip status="estimated" />
           </>
         }
       />
       <p className="mt-5 font-mono text-3xl font-medium tracking-tight tabular-nums">
         {formatGrouped(reading.registerKwh)}
-        <span className="ml-2 text-base font-normal text-muted">kWh</span>
+        <span className="ms-2 text-base font-normal text-muted">kWh</span>
       </p>
       <dl className="mt-4 grid gap-3 text-sm">
         <div>
-          <dt className="text-muted">Last updated in the sample</dt>
+          <dt className="text-muted">{t("dashboard.readingUpdated")}</dt>
           <dd className="mt-1 font-medium">{reading.submittedOn}</dd>
         </div>
         <div>
-          <dt className="text-muted">Previous checkpoint</dt>
-          <dd className="mt-1 font-medium">Not on file in this sample</dd>
+          <dt className="text-muted">{t("dashboard.previousCheckpoint")}</dt>
+          <dd className="mt-1 font-medium">{t("dashboard.previousMissing")}</dd>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <dt className="text-muted">Live feed</dt>
+          <dt className="text-muted">{t("dashboard.liveFeed")}</dt>
           <dd>
             <DataTrustChip status="unavailable" />
           </dd>

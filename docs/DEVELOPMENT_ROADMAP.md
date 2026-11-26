@@ -1,6 +1,6 @@
 # Development roadmap
 
-The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 9 are implemented. Parts 10 through 12 are not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
+The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 10 are implemented. Parts 11 and 12 are not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
 
 ## 1. Project foundation and design system — done
 
@@ -65,10 +65,11 @@ The product is built in twelve parts. A later part is not started because a rout
 - A forecast snapshot is copied only when the existing forecast is estimated. The comparison with measured use does not change that forecast and is not an accuracy score.
 - A kWh target is a figure the household entered for one cycle. PKR savings stay unavailable. See [HISTORY_INSIGHTS_SAVINGS.md](HISTORY_INSIGHTS_SAVINGS.md).
 
-## 10. Localization and accessibility — not started
+## 10. Localization and accessibility — done
 
-- Urdu and English copy, including the Noto Nastaliq face already loaded for later Urdu text.
-- The shell's current contrast, focus, and 48px targets stay in place while language support is added.
+- English remains the default. Urdu switches the whole interface to a right-to-left layout and Noto Nastaliq Urdu. The choice is `bijlibachat.language.v1` in this browser and does not replace the theme.
+- Navigation, page copy, forms, empty states, trust labels, and chart tables use one typed dictionary. API sentences stay in English and are isolated in Urdu layout. Meter, forecast, appliance, and history formulas are unchanged. PKR savings stay unavailable.
+- Labels, keyboard dialogs, focus, and chart text alternatives were checked with the existing pages. This is not a certified WCAG audit. See [LOCALIZATION_ACCESSIBILITY.md](LOCALIZATION_ACCESSIBILITY.md).
 
 ## 11. Integration, security, and testing — not started
 

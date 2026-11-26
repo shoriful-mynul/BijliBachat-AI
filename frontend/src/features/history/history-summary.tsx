@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/components/i18n/language-provider";
+import { SourceText } from "@/components/i18n/source-text";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
@@ -48,29 +50,38 @@ export function HistorySummary() {
     return () => controller.abort();
   }, [apiBase]);
 
+  const { t } = useI18n();
   const trend = report?.direction === "unavailable" ? null : report?.insights[0];
 
   return (
     <Card as="section" aria-labelledby="history-summary-heading">
       <div className="flex flex-wrap items-center gap-2">
         <h2 id="history-summary-heading" className="font-display text-lg font-semibold">
-          Measured history
+          {t("dashboard.historyTitle")}
         </h2>
         <DataTrustChip status={report?.latest_cycle_kwh ? "calculated" : "unavailable"} />
       </div>
       {!checked ? (
-        <p className="mt-3 text-sm leading-6">Looking for measured cycles on this device.</p>
+        <p className="mt-3 text-sm leading-6">{t("dashboard.historyLooking")}</p>
       ) : report?.latest_cycle_kwh ? (
         <p className="mt-3 text-sm leading-6">
-          Latest measured cycle {report.latest_cycle_kwh} kWh
-          {report.latest_average_daily_kwh ? `, ${report.latest_average_daily_kwh} kWh on an average day` : ""}.
+          {report.latest_average_daily_kwh
+            ? t("dashboard.historyLatestDaily", {
+                kwh: report.latest_cycle_kwh,
+                daily: report.latest_average_daily_kwh,
+              })
+            : t("dashboard.historyLatest", { kwh: report.latest_cycle_kwh })}
         </p>
       ) : (
-        <p className="mt-3 text-sm leading-6">No measured cycle is saved on this device yet.</p>
+        <p className="mt-3 text-sm leading-6">{t("dashboard.historyEmpty")}</p>
       )}
-      {trend ? <p className="mt-2 text-sm leading-6">{trend.detail}</p> : null}
+      {trend ? (
+        <p className="mt-2 text-sm leading-6">
+          <SourceText>{trend.detail}</SourceText>
+        </p>
+      ) : null}
       <div className="mt-4">
-        <Button href="/history">Open history</Button>
+        <Button href="/history">{t("dashboard.openHistory")}</Button>
       </div>
     </Card>
   );

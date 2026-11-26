@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/components/i18n/language-provider";
+import { SourceText } from "@/components/i18n/source-text";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
@@ -59,31 +61,39 @@ export function PredictionSummary() {
     return () => controller.abort();
   }, [apiBase]);
 
+  const { t } = useI18n();
   const estimated = report?.forecast_status === "estimated" && report.projected_cycle_kwh.value;
 
   return (
     <Card as="section" aria-labelledby="prediction-summary-heading">
       <div className="flex flex-wrap items-center gap-2">
         <h2 id="prediction-summary-heading" className="font-display text-lg font-semibold">
-          Forecast from your checkpoints
+          {t("dashboard.forecastTitle")}
         </h2>
         <DataTrustChip status={estimated ? "estimated" : "unavailable"} />
       </div>
       {estimated ? (
         <p className="mt-3 text-sm leading-6">
-          If the observed pace continues, estimated use by the cycle end is {report?.projected_cycle_kwh.value} kWh.
-          This is not a meter reading and not a confirmed bill.
+          {t("dashboard.forecastPace", { kwh: report?.projected_cycle_kwh.value ?? "" })}
         </p>
       ) : (
         <p className="mt-3 text-sm leading-6">
-          {report?.missing_inputs[0] ?? "Add checkpoints and the billing-cycle register before a forecast can be shown."}
+          {report?.missing_inputs[0] ? (
+            <SourceText>{report.missing_inputs[0]}</SourceText>
+          ) : (
+            t("dashboard.forecastEmpty")
+          )}
         </p>
       )}
       <p className="mt-2 text-sm leading-6 text-muted">
-        {report?.budget_comparison.reason ?? "A payable rupee forecast is not available from the loaded tariff files."}
+        {report?.budget_comparison.reason ? (
+          <SourceText>{report.budget_comparison.reason}</SourceText>
+        ) : (
+          t("dashboard.forecastMoney")
+        )}
       </p>
       <div className="mt-4">
-        <Button href="/prediction">Open the forecast</Button>
+        <Button href="/prediction">{t("dashboard.openForecast")}</Button>
       </div>
     </Card>
   );

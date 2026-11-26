@@ -32,6 +32,59 @@ body {
   line-height: 1.5;
 }
 
+html[lang="ur"] {
+  --font-sans: var(--font-urdu);
+  --font-display: var(--font-urdu);
+}
+
+html[lang="ur"] body {
+  line-height: 1.9;
+}
+
+html[lang="ur"] :where(h1, h2, h3, button, a, label, th) {
+  line-height: 1.55;
+}
+
+html[dir="rtl"] .font-mono,
+html[dir="rtl"] .tabular-nums {
+  font-family: var(--font-mono);
+  direction: ltr;
+  unicode-bidi: isolate;
+  line-height: 1.4;
+}
+
+.nav-rail {
+  box-shadow: inset 3px 0 0 #42c8e8;
+}
+
+[dir="rtl"] .nav-rail {
+  box-shadow: inset -3px 0 0 #42c8e8;
+}
+
+.danger-rail {
+  box-shadow: inset 3px 0 0 #ff7d83;
+}
+
+[dir="rtl"] .danger-rail {
+  box-shadow: inset -3px 0 0 #ff7d83;
+}
+
+.accent-rail {
+  box-shadow: inset 3px 0 0 #42c8e8;
+}
+
+[dir="rtl"] .accent-rail {
+  box-shadow: inset -3px 0 0 #42c8e8;
+}
+
+[dir="rtl"] .flip-rtl {
+  transform: scaleX(-1);
+}
+
+.chart-ltr {
+  direction: ltr;
+}
+
 :where(a, button, input, select, summary, [tabindex]):focus-visible {
   outline: 2px solid #42c8e8;
   outline-offset: 2px;

@@ -1,6 +1,7 @@
 "use client";
 
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useI18n } from "@/components/i18n/language-provider";
 import type { ForecastReport } from "./types";
 
 type ForecastChartProps = {
@@ -9,6 +10,7 @@ type ForecastChartProps = {
 
 /** Observed checkpoints and one estimated point at the cycle end. No days are filled in. */
 export function ForecastChart({ series }: ForecastChartProps) {
+  const { t } = useI18n();
   const lastObserved = [...series].reverse().find((point) => point.kind === "observed");
   const points = series.map((point) => ({
     label: point.label,
@@ -21,7 +23,8 @@ export function ForecastChart({ series }: ForecastChartProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="h-64 w-full min-w-0">
+      <p className="sr-only">{t("forecast.chartDescription")}</p>
+      <div className="chart-ltr h-64 w-full min-w-0" role="img" aria-label={t("forecast.chartTitle")}>
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height: 256 }}>
           <LineChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--line)" />
@@ -37,18 +40,18 @@ export function ForecastChart({ series }: ForecastChartProps) {
               }}
             />
             <Legend />
-            <Line type="monotone" dataKey="observed" name="Observed kWh" stroke="#42c8e8" strokeWidth={2} dot connectNulls={false} isAnimationActive={false} />
-            <Line type="monotone" dataKey="estimated" name="Estimated kWh" stroke="#e2a33a" strokeWidth={2} strokeDasharray="5 4" dot connectNulls={false} isAnimationActive={false} />
+            <Line type="monotone" dataKey="observed" name={t("forecast.observedSeries")} stroke="#42c8e8" strokeWidth={2} dot connectNulls={false} isAnimationActive={false} />
+            <Line type="monotone" dataKey="estimated" name={t("forecast.estimatedSeries")} stroke="#e2a33a" strokeWidth={2} strokeDasharray="5 4" dot connectNulls={false} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <table className="w-full text-left text-sm">
-        <caption className="sr-only">Observed cycle consumption and the estimated point at the billing-cycle end</caption>
+      <table className="w-full text-start text-sm">
+        <caption className="pb-2 text-start text-sm text-muted">{t("forecast.chartDescription")}</caption>
         <thead>
           <tr>
-            <th scope="col" className="py-2 font-medium">Point</th>
-            <th scope="col" className="py-2 font-medium">kWh since cycle start</th>
-            <th scope="col" className="py-2 font-medium">Kind</th>
+            <th scope="col" className="py-2 font-medium">{t("forecast.point")}</th>
+            <th scope="col" className="py-2 font-medium">{t("forecast.sinceStart")}</th>
+            <th scope="col" className="py-2 font-medium">{t("forecast.kind")}</th>
           </tr>
         </thead>
         <tbody>
@@ -56,7 +59,7 @@ export function ForecastChart({ series }: ForecastChartProps) {
             <tr key={`${point.kind}-${point.label}`} className="border-t border-line">
               <td className="py-2">{point.label}</td>
               <td className="py-2 font-mono">{point.kwh}</td>
-              <td className="py-2">{point.kind === "observed" ? "Observed" : "Estimated"}</td>
+              <td className="py-2">{point.kind === "observed" ? t("forecast.observed") : t("trust.estimated")}</td>
             </tr>
           ))}
         </tbody>

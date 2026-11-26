@@ -1,5 +1,9 @@
+"use client";
+
+import { useI18n } from "@/components/i18n/language-provider";
 import { LoadingState } from "@/components/ui/loading-state";
 
 export default function Loading() {
-  return <LoadingState label="Loading this page" />;
+  const { t } = useI18n();
+  return <LoadingState label={t("loading.page")} />;
 }

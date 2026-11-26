@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type FocusEvent, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
+import { useI18n } from "@/components/i18n/language-provider";
 import { isNavActive, type NavigationItem as NavigationItemData } from "@/lib/navigation";
 import { cn } from "@/lib/cn";
 
@@ -16,6 +17,10 @@ type NavigationItemProps = {
 
 export function NavigationItem({ item, variant, tooltip = false, onNavigate }: NavigationItemProps) {
   const pathname = usePathname();
+  const { t, direction } = useI18n();
+  const label = t(item.labelKey);
+  const shortLabel = t(item.shortKey);
+  const description = t(item.descriptionKey);
   const active = isNavActive(pathname, item.href);
   const Icon = item.icon;
   const [tip, setTip] = useState(false);
@@ -33,8 +38,8 @@ export function NavigationItem({ item, variant, tooltip = false, onNavigate }: N
       <Link
         href={item.href}
         aria-current={active ? "page" : undefined}
-        aria-label={variant === "row" ? undefined : item.label}
-        title={variant === "sidebar" && tooltip ? item.label : undefined}
+        aria-label={variant === "row" ? undefined : label}
+        title={variant === "sidebar" && tooltip ? label : undefined}
         onClick={onNavigate}
         onMouseEnter={tooltip ? showTip : undefined}
         onMouseLeave={tooltip ? hideTip : undefined}
@@ -49,7 +54,7 @@ export function NavigationItem({ item, variant, tooltip = false, onNavigate }: N
           variant === "row" && "flex min-h-12 items-center gap-3 px-2 text-sm",
           variant === "sidebar" &&
             (active
-              ? "bg-raised text-foreground shadow-[inset_3px_0_0_#42c8e8]"
+              ? "nav-rail bg-raised text-foreground"
               : "text-muted hover:bg-raised/70 hover:text-foreground"),
           variant === "tab" &&
             (active
@@ -64,34 +69,47 @@ export function NavigationItem({ item, variant, tooltip = false, onNavigate }: N
           aria-hidden="true"
         />
         {variant === "sidebar" ? (
-          <span className="sidebar-expanded-only text-left leading-snug" aria-hidden="true">
-            {item.label}
+          <span className="sidebar-expanded-only text-start leading-snug" aria-hidden="true">
+            {label}
           </span>
         ) : null}
-        {variant === "tab" ? <span aria-hidden="true">{item.shortLabel}</span> : null}
+        {variant === "tab" ? <span aria-hidden="true">{shortLabel}</span> : null}
         {variant === "row" ? (
           <span className="min-w-0">
-            <span className="block">{item.label}</span>
-            <span className="block text-xs leading-5 font-normal text-muted">{item.description}</span>
+            <span className="block">{label}</span>
+            <span className="block text-xs leading-5 font-normal text-muted">{description}</span>
           </span>
         ) : null}
       </Link>
-      {tooltip && tip ? <CollapsedTooltip label={item.label} anchor={anchor} /> : null}
+      {tooltip && tip ? <CollapsedTooltip label={label} anchor={anchor} rtl={direction === "rtl"} /> : null}
     </>
   );
 }
 
-function CollapsedTooltip({ label, anchor }: { label: string; anchor: HTMLElement | null }) {
+function CollapsedTooltip({
+  label,
+  anchor,
+  rtl,
+}: {
+  label: string;
+  anchor: HTMLElement | null;
+  rtl: boolean;
+}) {
   if (!anchor) {
     return null;
   }
 
   const rect = anchor.getBoundingClientRect();
+  const top = rect.top + rect.height / 2;
 
   return createPortal(
     <span
       aria-hidden="true"
-      style={{ top: rect.top + rect.height / 2, left: rect.right + 8 }}
+      style={
+        rtl
+          ? { top, right: window.innerWidth - rect.left + 8 }
+          : { top, left: rect.right + 8 }
+      }
       className="pointer-events-none fixed z-50 -translate-y-1/2 rounded-xl border border-line bg-card px-2.5 py-1.5 text-sm text-foreground"
     >
       {label}

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { TrendingUp } from "lucide-react";
+import { LocalizedNotice, SourceText } from "@/components/i18n/source-text";
+import { useI18n } from "@/components/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
@@ -18,6 +20,7 @@ import { clearBudget, loadBudget, loadCycle, saveBudget, saveCycle, type StoredB
 import type { BudgetValidation, ForecastQuantity, ForecastReport } from "./types";
 
 export function PredictionView() {
+  const { t } = useI18n();
   const apiBase = getApiBaseUrl();
   const [ready, setReady] = useState(false);
   const [readings, setReadings] = useState<StoredReading[]>([]);
@@ -147,39 +150,41 @@ export function PredictionView() {
     <div className="flex flex-col gap-5">
       <EmptyState
         icon={TrendingUp}
-        title="An estimate from the pace of your checkpoints"
-        description="This uses readings kept on this device. It is not a confirmed bill, and it does not watch the meter continuously. A future unit figure is an estimate. A rupee total is shown only when a complete tariff can price it."
+        title={t("forecast.introTitle")}
+        description={t("forecast.intro")}
       />
-      {!apiBase ? <p role="alert">The API address is not configured.</p> : null}
-      {error ? <p role="alert">{error}</p> : null}
+      {!apiBase ? <p role="alert">{t("common.apiMissing")}</p> : null}
+      {error ? <p role="alert"><LocalizedNotice value={error} /></p> : null}
 
       <Card as="section" aria-labelledby="forecast-heading">
         <div className="flex flex-wrap items-center gap-2">
           <h2 id="forecast-heading" className="font-display text-lg font-semibold">
-            Consumption forecast
+            {t("forecast.heading")}
           </h2>
           <DataTrustChip status={report?.forecast_status === "estimated" ? "estimated" : "unavailable"} />
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Fact label="Used so far this cycle" quantity={report?.cycle_consumption_kwh} />
-          <Fact label="Observed average per day" quantity={report?.average_daily_kwh} period={report?.observation_period} />
-          <Fact label="Estimated additional use" quantity={report?.projected_additional_kwh} />
-          <Fact label="Estimated use by the cycle end" quantity={report?.projected_cycle_kwh} />
+          <Fact label={t("forecast.used")} quantity={report?.cycle_consumption_kwh} />
+          <Fact label={t("forecast.average")} quantity={report?.average_daily_kwh} period={report?.observation_period} />
+          <Fact label={t("forecast.additional")} quantity={report?.projected_additional_kwh} />
+          <Fact label={t("forecast.cycleEnd")} quantity={report?.projected_cycle_kwh} />
         </div>
         {report?.observation_period ? (
           <p className="mt-3 text-sm leading-6 text-muted">
-            Observation period {report.observation_period}
-            {report.observation_days ? ` (${report.observation_days} days)` : ""}.
-            {report.billing_cycle_ends_on ? ` Billing cycle ends ${report.billing_cycle_ends_on}.` : ""}
-            {report.remaining_days ? ` ${report.remaining_days} days remain.` : ""}
+            {t("forecast.observation", {
+              period: report.observation_period,
+              days: report.observation_days ? t("forecast.observationDays", { count: report.observation_days }) : "",
+              end: report.billing_cycle_ends_on ? t("forecast.cycleEnds", { date: report.billing_cycle_ends_on }) : "",
+              remain: report.remaining_days ? t("forecast.daysRemain", { count: report.remaining_days }) : "",
+            })}
           </p>
         ) : null}
         {report && report.forecast_status === "unavailable" ? (
           <div className="mt-4">
-            <h3 className="text-sm font-semibold">The forecast is not available yet</h3>
+            <h3 className="text-sm font-semibold">{t("forecast.unavailableTitle")}</h3>
             <ul className="mt-2 flex flex-col gap-1 text-sm leading-6">
               {report.missing_inputs.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item}><SourceText>{item}</SourceText></li>
               ))}
             </ul>
           </div>
@@ -189,53 +194,51 @@ export function PredictionView() {
             <ForecastChart series={report.series} />
           </div>
         ) : (
-          <p className="mt-4 text-sm leading-6">No chart is shown until a forecast can be calculated from real checkpoints. Missing days are not filled in.</p>
+          <p className="mt-4 text-sm leading-6">{t("forecast.noChart")}</p>
         )}
         {report?.forecast_status === "estimated" ? (
           <div className="mt-4">
-            <Button type="button" variant="secondary" onClick={() => void saveSnapshot()}>Save this forecast on this device</Button>
-            {snapshotNote ? <p className="mt-2 text-sm leading-6">{snapshotNote}</p> : null}
+            <Button type="button" variant="secondary" onClick={() => void saveSnapshot()}>{t("forecast.save")}</Button>
+            {snapshotNote ? <p className="mt-2 text-sm leading-6"><LocalizedNotice value={snapshotNote} /></p> : null}
           </div>
         ) : null}
       </Card>
 
       <Card as="section" aria-labelledby="cycle-heading">
         <h2 id="cycle-heading" className="font-display text-lg font-semibold">
-          Billing cycle
+          {t("forecast.cycleTitle")}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-muted">
-          Enter the cycle dates and the register at the start of the cycle. These stay in this browser, separate from the meter checkpoints. An older checkpoint is not treated as the cycle start.
-        </p>
+        <p className="mt-2 text-sm leading-6 text-muted">{t("forecast.cycleHelp")}</p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <Input label="Cycle start date" type="date" value={cycle.cycle_started_on} onChange={(event) => setCycle({ ...cycle, cycle_started_on: event.target.value })} />
-          <Input label="Cycle end date" type="date" value={cycle.cycle_ends_on} onChange={(event) => setCycle({ ...cycle, cycle_ends_on: event.target.value })} />
-          <Input label="Register at cycle start" inputMode="decimal" value={cycle.cycle_start_register_kwh} onChange={(event) => setCycle({ ...cycle, cycle_start_register_kwh: event.target.value })} />
+          <Input label={t("forecast.startDate")} type="date" value={cycle.cycle_started_on} onChange={(event) => setCycle({ ...cycle, cycle_started_on: event.target.value })} />
+          <Input label={t("forecast.endDate")} type="date" value={cycle.cycle_ends_on} onChange={(event) => setCycle({ ...cycle, cycle_ends_on: event.target.value })} />
+          <Input label={t("forecast.startRegister")} inputMode="decimal" value={cycle.cycle_start_register_kwh} onChange={(event) => setCycle({ ...cycle, cycle_start_register_kwh: event.target.value })} />
           <Select
-            label="Meter"
+            label={t("forecast.meter")}
             value={cycle.meter_reference}
             onChange={(event) => setCycle({ ...cycle, meter_reference: event.target.value })}
-            options={[{ value: "", label: "Meter number not recorded" }, ...meters.map((item) => ({ value: item, label: item }))]}
+            options={[{ value: "", label: t("forecast.meterUnknown") }, ...meters.map((item) => ({ value: item, label: item }))]}
           />
-          <Input label="Distribution company" value={cycle.provider_code} onChange={(event) => setCycle({ ...cycle, provider_code: event.target.value })} hint="Optional. Used only to look for a complete payable tariff." />
+          <Input label={t("forecast.company")} value={cycle.provider_code} onChange={(event) => setCycle({ ...cycle, provider_code: event.target.value })} hint={t("forecast.companyHint")} />
           <Select
-            label="Tariff type"
+            label={t("forecast.tariffType")}
             value={cycle.tariff_type}
             onChange={(event) => setCycle({ ...cycle, tariff_type: event.target.value })}
             options={[
-              { value: "", label: "Not selected" },
-              { value: "non_tou", label: "Non time-of-use" },
-              { value: "tou", label: "Time of use" },
+              { value: "", label: t("forecast.notSelected") },
+              { value: "non_tou", label: t("forecast.nonTou") },
+              { value: "tou", label: t("forecast.tou") },
             ]}
           />
           <Select
-            label="Eligibility you can confirm"
+            label={t("forecast.eligibility")}
             value={cycle.eligibility}
             onChange={(event) => setCycle({ ...cycle, eligibility: event.target.value })}
             options={[
-              { value: "", label: "Not selected" },
-              { value: "lifeline", label: "Lifeline" },
-              { value: "protected", label: "Protected" },
-              { value: "unprotected", label: "Unprotected" },
+              { value: "", label: t("forecast.notSelected") },
+              { value: "lifeline", label: t("forecast.lifeline") },
+              { value: "protected", label: t("forecast.protected") },
+              { value: "unprotected", label: t("forecast.unprotected") },
             ]}
           />
         </div>
@@ -243,68 +246,73 @@ export function PredictionView() {
 
       <Card as="section" aria-labelledby="budget-heading">
         <h2 id="budget-heading" className="font-display text-lg font-semibold">
-          Your budget
+          {t("forecast.budgetTitle")}
         </h2>
         {budget ? (
           <p className="mt-3 text-sm leading-6">
-            Monthly budget {budget.monthly_budget_pkr ? `PKR ${budget.monthly_budget_pkr}` : "not set"}.
-            {budget.monthly_kwh_target ? ` Consumption target ${budget.monthly_kwh_target} kWh.` : ""}
-            {" "}This is a figure you entered. It is not a tariff.
+            {t("forecast.budgetSet", {
+              amount: budget.monthly_budget_pkr ? `PKR ${budget.monthly_budget_pkr}` : t("forecast.budgetNotSet"),
+              target: budget.monthly_kwh_target ? t("forecast.budgetTarget", { kwh: budget.monthly_kwh_target }) : "",
+            })}
           </p>
         ) : (
-          <p className="mt-3 text-sm leading-6">No budget is saved in this browser yet. Add one if you want a target to compare later.</p>
+          <p className="mt-3 text-sm leading-6">{t("forecast.budgetEmpty")}</p>
         )}
-        <p className="mt-2 text-sm leading-6 text-muted">Saved only in this browser. It is not synchronized to another device, and it is stored apart from meter readings.</p>
+        <p className="mt-2 text-sm leading-6 text-muted">{t("forecast.budgetLocal")}</p>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Input label="Monthly budget (PKR)" inputMode="decimal" value={budgetPkr} onChange={(event) => setBudgetPkr(event.target.value)} hint="Greater than zero and up to 1000000.00." />
-          <Input label="Monthly use target (kWh)" inputMode="decimal" value={targetKwh} onChange={(event) => setTargetKwh(event.target.value)} hint="Optional household preference. Not a tariff limit." />
+          <Input label={t("forecast.budgetPkr")} inputMode="decimal" value={budgetPkr} onChange={(event) => setBudgetPkr(event.target.value)} hint={t("forecast.budgetPkrHint")} />
+          <Input label={t("forecast.budgetKwh")} inputMode="decimal" value={targetKwh} onChange={(event) => setTargetKwh(event.target.value)} hint={t("forecast.budgetKwhHint")} />
         </div>
-        {budgetError ? <p className="mt-3 text-sm" role="alert">{budgetError}</p> : null}
-        {budgetNote ? <p className="mt-3 text-sm leading-6">{budgetNote}</p> : null}
+        {budgetError ? <p className="mt-3 text-sm" role="alert"><LocalizedNotice value={budgetError} /></p> : null}
+        {budgetNote ? <p className="mt-3 text-sm leading-6"><LocalizedNotice value={budgetNote} /></p> : null}
         <div className="mt-4 flex flex-wrap gap-3">
-          <Button type="button" onClick={saveBudgetForm}>Save budget on this device</Button>
-          <Button type="button" variant="secondary" onClick={removeBudget}>Clear budget</Button>
+          <Button type="button" onClick={saveBudgetForm}>{t("forecast.saveBudget")}</Button>
+          <Button type="button" variant="secondary" onClick={removeBudget}>{t("forecast.clearBudget")}</Button>
         </div>
       </Card>
 
       <Card as="section" aria-labelledby="compare-heading">
         <h2 id="compare-heading" className="font-display text-lg font-semibold">
-          Comparison
+          {t("forecast.compareTitle")}
         </h2>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <h3 className="text-sm font-semibold">Consumption target</h3>
+          <h3 className="text-sm font-semibold">{t("forecast.targetTitle")}</h3>
           {report ? <DataTrustChip status={chip(report.target_comparison.trust_status)} /> : null}
         </div>
-        <p className="mt-2 text-sm leading-6">{report?.target_comparison.detail ?? "The comparison appears after the forecast is calculated."}</p>
+        <p className="mt-2 text-sm leading-6">{report?.target_comparison.detail ? <SourceText>{report.target_comparison.detail}</SourceText> : t("forecast.targetPending")}</p>
         {report?.target_comparison.direction === "higher" || report?.target_comparison.direction === "lower" || report?.target_comparison.direction === "equal" ? (
           <p className="mt-2 font-mono text-sm">
-            Estimated {report.target_comparison.projected_cycle_kwh} kWh, target {report.target_comparison.target_kwh} kWh.
+            {t("forecast.targetLine", {
+              projected: report.target_comparison.projected_cycle_kwh ?? "",
+              target: report.target_comparison.target_kwh ?? "",
+            })}
           </p>
         ) : null}
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <h3 className="text-sm font-semibold">PKR budget</h3>
+          <h3 className="text-sm font-semibold">{t("forecast.pkrTitle")}</h3>
           <DataTrustChip status="unavailable" />
         </div>
-        <p className="mt-2 text-sm leading-6">{report?.budget_comparison.reason ?? "A payable amount is not available, so the budget cannot be compared."}</p>
+        <p className="mt-2 text-sm leading-6">{report?.budget_comparison.reason ? <SourceText>{report.budget_comparison.reason}</SourceText> : t("forecast.pkrPending")}</p>
         {report && report.bill_cost.missing_components.length > 0 ? (
-          <p className="mt-2 text-sm leading-6 text-muted">Missing: {report.bill_cost.missing_components.join(", ")}.</p>
+          <p className="mt-2 text-sm leading-6 text-muted">{t("common.missing", { items: report.bill_cost.missing_components.join(", ") })}</p>
         ) : null}
-        <p className="mt-2 text-sm leading-6">{report?.bill_cost.reason}</p>
+        <p className="mt-2 text-sm leading-6"><SourceText>{report?.bill_cost.reason}</SourceText></p>
       </Card>
     </div>
   );
 }
 
 function Fact({ label, quantity, period }: { label: string; quantity?: ForecastQuantity; period?: string | null }) {
+  const { t } = useI18n();
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-sm font-semibold">{label}</h3>
         {quantity ? <DataTrustChip status={chip(quantity.trust_status)} /> : null}
       </div>
-      <p className="mt-1 font-mono text-sm">{quantity?.value ?? "Unavailable"}</p>
-      <p className="mt-1 text-sm leading-6 text-muted">{quantity?.detail}</p>
-      {period ? <p className="text-sm text-muted">Period {period}.</p> : null}
+      <p className="mt-1 font-mono text-sm">{quantity?.value ?? t("common.unavailable")}</p>
+      <p className="mt-1 text-sm leading-6 text-muted"><SourceText>{quantity?.detail}</SourceText></p>
+      {period ? <p className="text-sm text-muted">{t("common.period", { period })}</p> : null}
     </div>
   );
 }

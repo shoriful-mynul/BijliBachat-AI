@@ -2,6 +2,8 @@
 
 import { useMemo, useRef, useState } from "react";
 import { FileSearch } from "lucide-react";
+import { LocalizedNotice, SourceText } from "@/components/i18n/source-text";
+import { useI18n } from "@/components/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTrustChip } from "@/components/ui/data-trust-chip";
@@ -117,21 +119,21 @@ const emptyForm: FormState = {
 };
 
 const moneyFields = [
-  ["energy_charge", "Energy charges"],
-  ["fixed_charge", "Fixed charges"],
-  ["fuel_price_adjustment", "Fuel price adjustment"],
-  ["gst", "GST"],
-  ["electricity_duty", "Electricity duty"],
-  ["tv_fee", "TV fee"],
-  ["arrears", "Arrears"],
-  ["total_amount_due", "Total amount due"],
+  ["energy_charge", "bill.energy"],
+  ["fixed_charge", "bill.fixed"],
+  ["fuel_price_adjustment", "bill.fpa"],
+  ["gst", "bill.gst"],
+  ["electricity_duty", "bill.duty"],
+  ["tv_fee", "bill.tv"],
+  ["arrears", "bill.arrears"],
+  ["total_amount_due", "bill.total"],
 ] as const;
 
-const outcomeCopy = {
-  match: "Match",
-  possible_mismatch: "Possible mismatch",
-  not_comparable: "Not comparable",
-  unavailable: "Unavailable",
+const outcomeKeys = {
+  match: "bill.match",
+  possible_mismatch: "bill.mismatch",
+  not_comparable: "bill.notComparable",
+  unavailable: "trust.unavailable",
 } as const;
 
 function trustChip(status: string): DataTrustStatus {
@@ -245,6 +247,7 @@ async function readError(response: Response): Promise<string> {
 }
 
 export function BillAuditor() {
+  const { t } = useI18n();
   const apiBase = getApiBaseUrl();
   const abortRef = useRef<AbortController | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -393,28 +396,26 @@ export function BillAuditor() {
     <div className="flex flex-col gap-5">
       <EmptyState
         icon={FileSearch}
-        title="Review a bill before anything is compared"
-        description="Upload a JPEG, PNG, WebP, or PDF up to 8 MB. The reading is extracted and stays unconfirmed until you correct it and confirm it. The file is not saved in this app."
+        title={t("bill.introTitle")}
+        description={t("bill.intro")}
       />
 
       <Card as="section" aria-labelledby="upload-heading">
         <h2 id="upload-heading" className="font-display text-lg font-semibold">
-          Upload
+          {t("bill.uploadTitle")}
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-          A missing charge stays blank. It is not treated as zero. Gemini reads the document. The tariff engine does the comparison after you confirm the values.
-        </p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{t("bill.uploadHelp")}</p>
         {!apiBase ? (
           <p className="mt-3 text-sm" role="alert">
-            The API address is not configured.
+            {t("common.apiMissing")}
           </p>
         ) : null}
         <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
           <input
-            aria-label="Electricity bill file"
+            aria-label={t("bill.file")}
             type="file"
             accept="image/jpeg,image/png,image/webp,application/pdf,.jpg,.jpeg,.png,.webp,.pdf"
-            className="block min-h-12 w-full text-sm file:mr-3 file:min-h-12 file:rounded-xl file:border-0 file:bg-aqua file:px-4 file:font-semibold file:text-ink"
+            className="block min-h-12 w-full text-sm file:me-3 file:min-h-12 file:rounded-xl file:border-0 file:bg-aqua file:px-4 file:font-semibold file:text-ink"
             onChange={(event) => {
               setFile(event.target.files?.[0] ?? null);
               setError(null);
@@ -426,15 +427,15 @@ export function BillAuditor() {
             onClick={upload}
             disabled={!file || !apiBase || step === "uploading"}
           >
-            Read this bill
+            {t("bill.read")}
           </Button>
           <Button type="button" variant="ghost" className="shrink-0 whitespace-nowrap" onClick={reset}>
-            Start over
+            {t("bill.reset")}
           </Button>
         </div>
         {step === "uploading" ? (
           <div className="mt-4 flex flex-col gap-3">
-            <LoadingState label="Reading the bill" />
+            <LoadingState label={t("bill.reading")} />
             <Button
               type="button"
               variant="secondary"
@@ -442,13 +443,13 @@ export function BillAuditor() {
                 abortRef.current?.abort();
               }}
             >
-              Cancel reading
+              {t("bill.cancel")}
             </Button>
           </div>
         ) : null}
         {error ? (
           <p className="mt-3 text-sm" role="alert">
-            {error}
+            <LocalizedNotice value={error} />
           </p>
         ) : null}
       </Card>
@@ -457,104 +458,102 @@ export function BillAuditor() {
         <Card as="section" aria-labelledby="review-heading">
           <div className="flex flex-wrap items-center gap-3">
             <h2 id="review-heading" className="font-display text-lg font-semibold">
-              Review the extraction
+              {t("bill.reviewTitle")}
             </h2>
             <DataTrustChip status="extracted" />
           </div>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-            These values were read from the document. Correct anything that is wrong, leave unclear fields blank, then confirm them. Confirmation is your action. A confidence label does not confirm a field.
-          </p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{t("bill.reviewHelp")}</p>
           <ul className="mt-3 flex flex-col gap-1 text-sm text-muted">
             {draft.limitations.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item}><SourceText>{item}</SourceText></li>
             ))}
           </ul>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <Field
-              label="Distribution company"
+              label={t("bill.company")}
               value={form.provider_code}
               extracted={extractedNotes.provider_code}
               inputMode="text"
               onChange={(value) => edit("provider_code", value)}
             />
             <Select
-              label="Consumer category"
+              label={t("bill.category")}
               hint={noteFor(extractedNotes.consumer_category)}
               value={form.consumer_category}
               onChange={(event) => edit("consumer_category", event.target.value)}
               options={[
-                { value: "", label: "Not confirmed" },
-                { value: "residential", label: "Residential" },
+                { value: "", label: t("bill.notConfirmed") },
+                { value: "residential", label: t("bill.residential") },
               ]}
             />
             <Select
-              label="Tariff type"
+              label={t("forecast.tariffType")}
               hint={noteFor(extractedNotes.tariff_type)}
               value={form.tariff_type}
               onChange={(event) => edit("tariff_type", event.target.value)}
               options={[
-                { value: "", label: "Not confirmed" },
-                { value: "non_tou", label: "Non time-of-use" },
-                { value: "tou", label: "Time of use" },
+                { value: "", label: t("bill.notConfirmed") },
+                { value: "non_tou", label: t("forecast.nonTou") },
+                { value: "tou", label: t("forecast.tou") },
               ]}
             />
             <Select
-              label="Eligibility"
-              hint={noteFor(extractedNotes.eligibility) ?? "Leave this blank when the bill does not say it."}
+              label={t("forecast.eligibilityShort")}
+              hint={noteFor(extractedNotes.eligibility) ?? t("bill.eligibilityHint")}
               value={form.eligibility}
               onChange={(event) => edit("eligibility", event.target.value)}
               options={[
-                { value: "", label: "Not confirmed" },
-                { value: "lifeline", label: "Lifeline" },
-                { value: "protected", label: "Protected" },
-                { value: "unprotected", label: "Unprotected" },
+                { value: "", label: t("bill.notConfirmed") },
+                { value: "lifeline", label: t("forecast.lifeline") },
+                { value: "protected", label: t("forecast.protected") },
+                { value: "unprotected", label: t("forecast.unprotected") },
               ]}
             />
             <Input
-              label="Billing date"
+              label={t("bill.billingDate")}
               type="date"
               value={form.billing_date}
               hint={noteFor(extractedNotes.billing_date)}
               onChange={(event) => edit("billing_date", event.target.value)}
             />
             <Field
-              label="Billed units (kWh)"
+              label={t("bill.units")}
               value={form.consumption_kwh}
               extracted={extractedNotes.consumption_kwh}
               onChange={(value) => edit("consumption_kwh", value)}
             />
             <Field
-              label="Peak units (kWh)"
+              label={t("bill.peak")}
               value={form.peak_kwh}
               extracted={extractedNotes.peak_kwh}
               onChange={(value) => edit("peak_kwh", value)}
             />
             <Field
-              label="Off-peak units (kWh)"
+              label={t("bill.offPeak")}
               value={form.off_peak_kwh}
               extracted={extractedNotes.off_peak_kwh}
               onChange={(value) => edit("off_peak_kwh", value)}
             />
             <Field
-              label="Sanctioned load (kW)"
+              label={t("bill.load")}
               value={form.sanctioned_load_kw}
               extracted={extractedNotes.sanctioned_load_kw}
               onChange={(value) => edit("sanctioned_load_kw", value)}
             />
             <Select
-              label="Phase"
+              label={t("bill.phase")}
               value={form.phase}
               onChange={(event) => edit("phase", event.target.value)}
               options={[
-                { value: "", label: "Not confirmed" },
-                { value: "single", label: "Single phase" },
-                { value: "three", label: "Three phase" },
+                { value: "", label: t("bill.notConfirmed") },
+                { value: "single", label: t("bill.single") },
+                { value: "three", label: t("bill.three") },
               ]}
             />
             {moneyFields.map(([key, label]) => (
               <Field
                 key={key}
-                label={label}
+                label={t(label)}
                 value={form[key]}
                 extracted={extractedNotes[key]}
                 onChange={(value) => edit(key, value)}
@@ -568,69 +567,70 @@ export function BillAuditor() {
               checked={reviewed}
               onChange={(event) => setReviewed(event.target.checked)}
             />
-            I have reviewed these values. Use this form, not the original extraction, for the audit.
+            {t("bill.confirmBox")}
           </label>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <Button type="button" onClick={audit} disabled={!reviewed || step === "auditing"}>
-              {step === "auditing" ? "Comparing" : "Audit confirmed values"}
+              {step === "auditing" ? t("bill.comparing") : t("bill.auditAction")}
             </Button>
           </div>
         </Card>
       ) : null}
 
-      {step === "auditing" ? <LoadingState label="Comparing confirmed values" /> : null}
+      {step === "auditing" ? <LoadingState label={t("bill.comparingState")} /> : null}
 
       {report ? (
         <Card as="section" aria-labelledby="audit-heading">
           <div className="flex flex-wrap items-center gap-3">
             <h2 id="audit-heading" className="font-display text-lg font-semibold">
-              Audit
+              {t("bill.auditTitle")}
             </h2>
             <DataTrustChip status={trustChip(report.overall_trust_status)} />
-            <span className="text-sm text-muted">Confirmed by you</span>
+            <span className="text-sm text-muted">{t("bill.confirmedByYou")}</span>
           </div>
-          <p className="mt-2 max-w-2xl text-sm leading-6">{report.explanation}</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6"><SourceText>{report.explanation}</SourceText></p>
           <p className="mt-2 text-sm text-muted">
-            {report.provider_code} · {report.consumer_category} · {report.billing_period}
-            {report.config_id ? ` · ${report.config_id} ${report.config_version ?? ""}` : " · No tariff configuration"}
+            <bdi>{report.provider_code}</bdi> · <bdi>{report.consumer_category}</bdi> · <bdi>{report.billing_period}</bdi>
+            {report.config_id ? <> · <bdi>{report.config_id} {report.config_version ?? ""}</bdi></> : ` · ${t("bill.noConfig")}`}
           </p>
           {report.source ? (
             <p className="mt-1 text-sm text-muted">
-              Source: {report.source.document_title}. {report.source.reference}
+              {t("bill.source", { title: report.source.document_title, reference: report.source.reference })}
             </p>
           ) : null}
           {!report.complete_payable_comparison ? (
-            <p className="mt-3 text-sm leading-6">
-              A complete payable-bill comparison is unavailable. The total on the bill was not compared with a partial calculation.
-            </p>
+            <p className="mt-3 text-sm leading-6">{t("bill.incomplete")}</p>
           ) : null}
           {report.missing_inputs.length > 0 ? (
-            <p className="mt-2 text-sm">Missing inputs: {report.missing_inputs.join(", ")}.</p>
+            <p className="mt-2 text-sm">{t("bill.missingInputs", { items: report.missing_inputs.join(", ") })}</p>
           ) : null}
           <div className="mt-4 flex flex-col gap-3">
             {report.comparisons.map((item) => (
               <article key={`${item.code}-${item.label}`} className="rounded-xl border border-line p-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold">{item.label}</h3>
-                  <span className="text-sm">{outcomeCopy[item.outcome]}</span>
+                  <h3 className="text-sm font-semibold"><bdi>{item.label}</bdi></h3>
+                  <span className="text-sm">{t(outcomeKeys[item.outcome])}</span>
                   <DataTrustChip status={trustChip(item.trust_status)} />
                 </div>
-                <p className="mt-2 text-sm leading-6">{item.explanation}</p>
+                <p className="mt-2 text-sm leading-6"><SourceText>{item.explanation}</SourceText></p>
                 <p className="mt-1 font-mono text-sm">
-                  Confirmed {item.reported_amount ?? "blank"} · Calculated {item.calculated_amount ?? "blank"}
-                  {item.difference ? ` · Difference ${item.difference}` : ""}
+                  {t("bill.amounts", {
+                    reported: item.reported_amount ?? t("common.blank"),
+                    calculated: item.calculated_amount ?? t("common.blank"),
+                    difference: item.difference ? t("bill.difference", { amount: item.difference }) : "",
+                  })}
                 </p>
               </article>
             ))}
           </div>
           <ul className="mt-4 flex flex-col gap-1 text-sm text-muted">
             {report.limitations.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item}><SourceText>{item}</SourceText></li>
             ))}
           </ul>
           <div className="mt-4">
             <Button type="button" variant="secondary" onClick={draftComplaint}>
-              Prepare a complaint draft
+              {t("bill.complaintAction")}
             </Button>
           </div>
         </Card>
@@ -639,13 +639,11 @@ export function BillAuditor() {
       {complaint !== null ? (
         <Card as="section" aria-labelledby="complaint-heading">
           <h2 id="complaint-heading" className="font-display text-lg font-semibold">
-            Complaint draft
+            {t("bill.complaintTitle")}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            This draft has not been submitted. Edit it before you copy it. Nothing is sent to a distribution company.
-          </p>
+          <p className="mt-2 text-sm leading-6 text-muted">{t("bill.complaintHelp")}</p>
           <label className="mt-4 block text-sm font-medium" htmlFor="complaint-draft">
-            Draft text
+            {t("bill.draftLabel")}
           </label>
           <textarea
             id="complaint-draft"
@@ -661,7 +659,7 @@ export function BillAuditor() {
                 setCopied(true);
               }}
             >
-              {copied ? "Copied" : "Copy draft"}
+              {copied ? t("bill.copied") : t("bill.copy")}
             </Button>
           </div>
         </Card>

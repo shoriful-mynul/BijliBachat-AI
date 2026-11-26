@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useI18n } from "@/components/i18n/language-provider";
 import { demoDailyUnits } from "@/features/overview/demo-data";
 
 const points = demoDailyUnits.map((point) => ({
@@ -17,9 +18,11 @@ const points = demoDailyUnits.map((point) => ({
 }));
 
 export function ConsumptionChart() {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-3">
-      <div className="h-56 w-full">
+      <p className="sr-only">{t("dashboard.chartDescription")}</p>
+      <div className="chart-ltr h-56 w-full min-w-0" role="img" aria-label={t("dashboard.chartTitle")}>
         <ResponsiveContainer
           width="100%"
           height="100%"
@@ -56,12 +59,12 @@ export function ConsumptionChart() {
               }}
               formatter={(value) => {
                 const amount = typeof value === "number" ? value : Number(value ?? 0);
-                return [`${amount} kWh · demo`, "Use"];
+                return [t("dashboard.chartDemoTip", { amount }), t("dashboard.chartUse")];
               }}
             />
             <Bar
               dataKey="units"
-              name="Use"
+              name={t("dashboard.chartUse")}
               fill="#42c8e8"
               radius={[4, 4, 0, 0]}
               maxBarSize={16}
@@ -70,13 +73,13 @@ export function ConsumptionChart() {
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <div className="sr-only">
-        <table>
-        <caption>Demo daily consumption in kilowatt-hours, 1 to 18 November</caption>
+      <div className="overflow-x-auto">
+        <table className="w-full text-start text-sm">
+        <caption className="pb-2 text-start text-sm text-muted">{t("dashboard.chartDescription")}</caption>
         <thead>
           <tr>
-            <th scope="col">Day</th>
-            <th scope="col">Kilowatt-hours</th>
+            <th scope="col" className="py-2 font-medium">{t("dashboard.chartDay")}</th>
+            <th scope="col" className="py-2 font-medium">{t("dashboard.chartKwh")}</th>
           </tr>
         </thead>
         <tbody>

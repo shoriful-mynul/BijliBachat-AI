@@ -1,17 +1,20 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
+import { useI18n } from "@/components/i18n/language-provider";
 import { useTheme } from "@/hooks/use-theme";
 
 export function ThemeToggle() {
   const { setTheme } = useTheme();
+  const { t } = useI18n();
+  const label = t("shell.themeToggle");
 
   return (
     <button
       type="button"
       className="grid h-12 w-12 place-items-center rounded-xl hover:bg-raised"
-      aria-label="Switch color theme"
-      title="Switch color theme"
+      aria-label={label}
+      title={label}
       onClick={() => {
         const current =
           document.documentElement.dataset.theme === "light" ? "light" : "dark";
