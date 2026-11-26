@@ -104,15 +104,12 @@ export const navigation: readonly NavigationItem[] = [
     href: "/action-plan",
     label: "Action Plan",
     shortLabel: "Plan",
-    description: "Appliance ideas for this home, once recommendations exist.",
+    description: "Enter appliance use, try a different schedule, and see the kWh difference.",
     icon: ListChecks,
     group: "optimize",
     mobile: "tab",
     mobileOrder: 4,
-    status: "placeholder",
-    purpose:
-      "You will be able to see appliance ideas for this home and try simple what-if scenarios.",
-    later: "No rupee effect is shown. Savings are not calculated in this version.",
+    status: "ready",
   },
   {
     href: "/meter-readings",

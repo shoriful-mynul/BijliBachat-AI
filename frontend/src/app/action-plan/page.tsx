@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FeaturePlaceholder } from "@/components/layout/feature-placeholder";
+import { ActionPlanView } from "@/features/appliances/action-plan-view";
 import { navigationItem } from "@/lib/navigation";
 
 const page = navigationItem("/action-plan");
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function ActionPlanPage() {
-  return <FeaturePlaceholder item={page} />;
+  return <ActionPlanView />;
 }

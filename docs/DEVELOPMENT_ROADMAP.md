@@ -1,6 +1,6 @@
 # Development roadmap
 
-The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 7 are implemented. Parts 8 through 12 are not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
+The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 8 are implemented. Parts 9 through 12 are not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
 
 ## 1. Project foundation and design system — done
 
@@ -53,10 +53,11 @@ The product is built in twelve parts. A later part is not started because a rout
 - The household can enter a monthly PKR budget and an optional kWh target. Both stay in this browser, separate from meter checkpoints. The kWh target is not a tariff slab.
 - A payable rupee forecast is unavailable. The loaded files do not contain GST, fuel price adjustment, electricity duty, or a TV fee, and those gaps are not treated as zero. The PKR budget is not compared with a partial tariff. See [PREDICTION_BUDGET_INTELLIGENCE.md](PREDICTION_BUDGET_INTELLIGENCE.md).
 
-## 8. Appliance action plan and what-if simulator — not started
+## 8. Appliance action plan and what-if simulator — done
 
-- Practical actions whose rupee effect, when shown, is calculated in Python from stated assumptions.
-- Sample savings copy on the overview is replaced or clearly retired once a real calculation exists.
+- A household can enter appliances and compare a proposed schedule. Daily and period use are exact `Decimal` calculations. The difference is a scenario, not a measured saving.
+- Actions are created only from a change the household entered. No wattage or rupee saving is invented.
+- PKR savings stay unavailable because the loaded tariffs omit GST, fuel price adjustment, electricity duty, and the TV fee. The overview sample saving remains labeled demo data and links to the action plan. See [APPLIANCE_ACTION_PLAN.md](APPLIANCE_ACTION_PLAN.md).
 
 ## 9. History, insights, and savings measurement — not started
 
@@ -84,4 +85,4 @@ The product is built in twelve parts. A later part is not started because a rout
 
 ## Still out of scope
 
-Appliance savings, sign-in, notification delivery, and durable meter storage. Meter photos and bill images are read temporarily and are not stored. A payable production bill and a verified Cliff Guard threshold are also still out of scope until a verified file contains them.
+Sign-in, notification delivery, durable meter storage, and rupee savings from a partial tariff. Meter photos and bill images are read temporarily and are not stored. A payable production bill and a verified Cliff Guard threshold are also still out of scope until a verified file contains them.
