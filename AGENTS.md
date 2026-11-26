@@ -36,7 +36,7 @@ When a bill and the household record disagree, the words are "Possible mismatch"
 
 ## Secrets and input
 
-Do not put secrets or API keys in frontend code, committed env files, or logs. Validate external data and user input at the boundary that receives it.
+Do not put secrets or API keys in frontend code, committed env files, or logs. Validate external data and user input at the boundary that receives it. Production CORS is an explicit HTTPS origin. Do not trust `X-Forwarded-For` unless `TRUSTED_PROXIES` names the immediate peer. The in-process file-check limit is not a distributed quota. Do not replace the Firestore or Storage rules with an open ruleset. Run `npm test` in `firebase/` when those rules change.
 
 Keep the interface accessible and usable at 390px, about 768px, and 1440px. Interactive targets are at least 48px. English and Urdu share the same pages. Urdu is right-to-left. Language is stored only in `bijlibachat.language.v1`. Do not add a translation API or a second copy of a page for Urdu.
 

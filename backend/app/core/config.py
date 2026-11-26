@@ -1,10 +1,11 @@
+import ipaddress
 from functools import lru_cache
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
@@ -45,6 +46,19 @@ def parse_cors_origins(value: str) -> list[str]:
     return validated
 
 
+def parse_trusted_proxies(value: str) -> list[str]:
+    """Accept a comma-separated list of proxy IP addresses. A wildcard is rejected."""
+    proxies = [item.strip() for item in value.split(",") if item.strip()]
+    for proxy in proxies:
+        if proxy == "*":
+            raise ValueError("Trusted proxies must be explicit IP addresses.")
+        try:
+            ipaddress.ip_address(proxy)
+        except ValueError as exc:
+            raise ValueError(f"Invalid trusted proxy: {proxy}") from exc
+    return proxies
+
+
 class Settings(BaseSettings):
     """Environment-backed process settings. Gemini is optional and stays server-side."""
 
@@ -70,6 +84,7 @@ class Settings(BaseSettings):
     firebase_private_key: str | None = Field(default=None, repr=False)
     firebase_storage_bucket: str | None = None
     extract_rate_limit_per_minute: int = Field(default=60, ge=0, le=600)
+    trusted_proxies: list[str] = Field(default_factory=list)
 
     @field_validator(
         "gemini_api_key",
@@ -93,6 +108,28 @@ class Settings(BaseSettings):
         if isinstance(value, list):
             return parse_cors_origins(",".join(str(item) for item in value))
         raise ValueError("CORS origins must be a comma-separated string or a list.")
+
+    @field_validator("trusted_proxies", mode="before")
+    @classmethod
+    def validate_trusted_proxies(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if isinstance(value, str):
+            return parse_trusted_proxies(value)
+        if isinstance(value, list):
+            return parse_trusted_proxies(",".join(str(item) for item in value))
+        raise ValueError("Trusted proxies must be a comma-separated string or a list.")
+
+    @model_validator(mode="after")
+    def production_origins_use_https(self) -> "Settings":
+        if self.app_env != "production":
+            return self
+        if not self.cors_origins:
+            raise ValueError("Production CORS needs at least one HTTPS origin.")
+        for origin in self.cors_origins:
+            if urlsplit(origin).scheme != "https":
+                raise ValueError("Production CORS origins must use HTTPS.")
+        return self
 
     @property
     def version(self) -> str:

@@ -64,7 +64,7 @@ def test_field_validation_keeps_the_fastapi_detail_list() -> None:
 
 
 def test_unexpected_failure_hides_the_exception_text(caplog: pytest.LogCaptureFixture) -> None:
-    app = create_app(Settings(app_env="production", cors_origins=["http://localhost:3000"]))
+    app = create_app(Settings(app_env="production", cors_origins=["https://app.example.com"]))
 
     @app.get("/api/_contract/fail")
     def fail() -> None:

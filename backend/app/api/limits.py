@@ -1,8 +1,14 @@
-"""Configurable limit for bill and meter file checks."""
+"""Configurable limit for bill and meter file checks.
+
+The forwarding header is ignored unless the immediate peer is listed in
+`TRUSTED_PROXIES`. This limiter lives in one process and does not protect
+every replica of a hosted API.
+"""
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+from app.core.rate_limit import client_address
 from app.schemas.errors import ErrorCode, ErrorResponse
 
 
@@ -10,9 +16,10 @@ def extraction_limited(request: Request) -> JSONResponse | None:
     limiter = getattr(request.app.state, "extract_limiter", None)
     if limiter is None:
         return None
-    forwarded = request.headers.get("x-forwarded-for", "")
-    host = request.client.host if request.client else "local"
-    key = forwarded.split(",")[0].strip() or host
+    settings = request.app.state.settings
+    trusted = frozenset(getattr(settings, "trusted_proxies", []))
+    peer = request.client.host if request.client else None
+    key = client_address(peer, request.headers.get("x-forwarded-for"), trusted)
     if limiter.allow(key):
         return None
     body = ErrorResponse(

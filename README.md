@@ -8,7 +8,7 @@ BijliBachat AI is a Pakistan-focused household electricity expense product for t
 
 Understand → Predict → Prevent → Optimize → Measure
 
-A household should be able to see its electricity position, anticipate the month's expense, stay clear of an avoidable slab change, choose a practical action, and look back at what happened. Parts 1 through 11 of that journey are implemented. The overview still uses clearly labeled sample data. A payable rupee total is not calculated, because the loaded tariffs omit GST, fuel price adjustment, electricity duty, and the TV fee. English is the default language. Urdu uses a right-to-left layout. The choice stays in this browser.
+A household should be able to see its electricity position, anticipate the month's expense, stay clear of an avoidable slab change, choose a practical action, and look back at what happened. Parts 1 through 12 of that journey are implemented in this repository. The overview still uses clearly labeled sample data. A payable rupee total is not calculated, because the loaded tariffs omit GST, fuel price adjustment, electricity duty, and the TV fee. English is the default language. Urdu uses a right-to-left layout. The choice stays in this browser. Hosting steps are written in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). No public host was created from this repository.
 
 ## Technology stack
 
@@ -42,7 +42,9 @@ backend/
   app/integrations/gemini/  Document extraction client
   app/tariffs/     Dated tariff files and availability notes
   tests/           Contract, tariff, bill, config, and API tests
-docs/              Architecture, design system, roadmap
+docs/              Architecture, design system, roadmap, deployment, demo script
+firebase/          Firestore and Storage rules plus emulator tests
+.github/workflows/ Continuous checks for the frontend, the API, and the rules emulator
 .cursor/rules/     Permanent engineering and design rules
 ```
 
@@ -50,7 +52,7 @@ The repository root is the product. There is no extra nested application folder.
 
 ## Development setup
 
-Requirements: Node.js 20.9 or newer, npm, and Python 3.11 or newer.
+Requirements: Node.js 22 or newer, npm, and Python 3.11 or newer. The frontend tests use Node's type-stripping flag, which Node 20 does not provide.
 
 ```bash
 cp .env.example backend/.env
@@ -123,7 +125,8 @@ The dev extra installs `httpx2`, which is what this version of Starlette's `Test
 | `FIREBASE_CLIENT_EMAIL` | Backend | Optional service-account email. Server only |
 | `FIREBASE_PRIVATE_KEY` | Backend | Optional service-account private key. Server only. Never commit a real value |
 | `FIREBASE_STORAGE_BUCKET` | Backend | Optional. File retention stays off until this is set |
-| `EXTRACT_RATE_LIMIT_PER_MINUTE` | Backend | File-check limit per client. Default 60. `0` disables it |
+| `EXTRACT_RATE_LIMIT_PER_MINUTE` | Backend | File-check limit per client, inside one process. Default 60. `0` disables it |
+| `TRUSTED_PROXIES` | Backend | Optional comma-separated proxy IPs. Empty ignores `X-Forwarded-For` |
 | `NEXT_PUBLIC_FIREBASE_API_KEY` | Frontend | Public client key. Empty keeps local/demo mode |
 | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Frontend | Public Auth domain |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Frontend | Public project id |
@@ -147,6 +150,7 @@ Done in this version:
 - History at `/history`. Confirmed checkpoints become measured cycles. A saved forecast can be compared with a finished cycle. Records stay in this browser. Rupee savings are not shown. See [docs/HISTORY_INSIGHTS_SAVINGS.md](docs/HISTORY_INSIGHTS_SAVINGS.md).
 - English and Urdu on every route. Urdu is right-to-left. Settings stores the language in this browser, separately from the theme. See [docs/LOCALIZATION_ACCESSIBILITY.md](docs/LOCALIZATION_ACCESSIBILITY.md).
 - Optional Firebase sign-in, user-owned copies of confirmed records, and explicit file retention. Without Firebase settings, Settings says records stay in this browser. See [docs/FIREBASE_INTEGRATION_SECURITY.md](docs/FIREBASE_INTEGRATION_SECURITY.md).
+- Production CORS, a host start command, GitHub Actions, and emulator rules tests. The demo script is in [docs/HACKATHON_DEMO.md](docs/HACKATHON_DEMO.md). See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 - Reusable interface components, including trust and risk indicators.
 - FastAPI process health, environment-based CORS, and tests.
 - Backend contracts for a household profile, a meter checkpoint, trust labels, decimal amounts, and a public error body. Meter, forecast, appliance, and history routes calculate from records the browser sends. They do not keep those records.
@@ -154,7 +158,7 @@ Done in this version:
 
 Not done:
 
-- A payable production bill, a verified Cliff Guard threshold, rupee savings, notifications, and deployment. Sign-in and cloud copies work only when Firebase is configured. They are not continuous synchronization. The sample overview does not call the tariff engine. The forecast card on that page does. The sample saving on the overview stays labeled as demo data.
+- A payable production bill, a verified Cliff Guard threshold, rupee savings, notifications, and a verified public deployment. Sign-in and cloud copies work only when Firebase is configured. They are not continuous synchronization. The sample overview does not call the tariff engine. The forecast card on that page does. The sample saving on the overview stays labeled as demo data.
 
 The overview bill, units, chart, checkpoint, and illustrative saving are sample copy. They are marked **Demo data** and carry a trust chip. Cliff Guard shows **Needs verification** and does not state a unit threshold or a protected-consumer status.
 
@@ -173,6 +177,8 @@ The stage order is written in [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROA
 - [History, insights, and savings measurement](docs/HISTORY_INSIGHTS_SAVINGS.md)
 - [Localization and accessibility](docs/LOCALIZATION_ACCESSIBILITY.md)
 - [Firebase integration and security](docs/FIREBASE_INTEGRATION_SECURITY.md)
+- [Deployment](docs/DEPLOYMENT.md)
+- [Hackathon demo](docs/HACKATHON_DEMO.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
 - [Development roadmap](docs/DEVELOPMENT_ROADMAP.md)
 - [Engineering brief](AGENTS.md)

@@ -16,11 +16,35 @@ type StorageLike = {
   getItem(key: string): string | null;
 };
 
-const METER_KEY = "bijlibachat.meter-ledger.v1";
+export const DEVICE_RECORD_KEYS = [
+  "bijlibachat.meter-ledger.v1",
+  "bijlibachat.meter-household.v1",
+  "bijlibachat.budget.v1",
+  "bijlibachat.prediction-cycle.v1",
+  "bijlibachat.appliances.v1",
+  "bijlibachat.appliance-scenario.v1",
+  "bijlibachat.history-cycles.v1",
+  "bijlibachat.forecast-snapshots.v1",
+  "bijlibachat.history-baselines.v1",
+] as const;
+
+const METER_KEY = DEVICE_RECORD_KEYS[0];
 const APPLIANCE_KEY = "bijlibachat.appliances.v1";
 const CYCLE_KEY = "bijlibachat.history-cycles.v1";
 const SNAPSHOT_KEY = "bijlibachat.forecast-snapshots.v1";
 const BASELINE_KEY = "bijlibachat.history-baselines.v1";
+
+type RemovableStorage = {
+  removeItem(key: string): void;
+};
+
+/** Remove household records kept in this browser. Theme, language, and the sidebar stay. */
+export function clearDeviceRecords(storage: RemovableStorage): readonly string[] {
+  for (const key of DEVICE_RECORD_KEYS) {
+    storage.removeItem(key);
+  }
+  return DEVICE_RECORD_KEYS;
+}
 
 const allowedTrust = new Set(["Calculated", "Extracted", "Estimated"]);
 

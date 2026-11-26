@@ -82,6 +82,7 @@ def cloud():
             "token-b": AuthenticatedUser(uid="user-b", email="b@example.com"),
         },
         expired={"token-expired"},
+        revoked={"token-revoked"},
     )
     app.state.record_store = store
     app.state.file_store = files
@@ -110,6 +111,7 @@ def test_missing_invalid_and_expired_tokens(cloud) -> None:
     empty = client.get(path, headers={"Authorization": "Bearer "})
     invalid = client.get(path, headers=_auth("not-a-token"))
     expired = client.get(path, headers=_auth("token-expired"))
+    revoked = client.get(path, headers=_auth("token-revoked"))
 
     assert missing.status_code == 401
     assert missing.json()["message"] == "Sign in is required."
@@ -117,6 +119,8 @@ def test_missing_invalid_and_expired_tokens(cloud) -> None:
     assert empty.status_code == 401
     assert invalid.status_code == 401
     assert expired.status_code == 401
+    assert revoked.status_code == 401
+    assert revoked.json()["message"] == "The session is no longer valid. Sign in again."
     assert "not-a-token" not in invalid.text
     assert "token-expired" not in expired.text
     assert "a@example.com" not in invalid.text

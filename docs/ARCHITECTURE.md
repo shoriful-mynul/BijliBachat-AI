@@ -25,7 +25,7 @@ The root layout stays statically renderable. Theme, language, and the collapsed 
 
 ## Backend
 
-The backend is a FastAPI application in `backend/`. `create_app()` builds the process, stores settings on `app.state`, and attaches CORS. Origins must be explicit `http` or `https` URLs. A wildcard is a startup error. The optional Gemini key and the optional Firebase Admin credentials are backend settings. Neither is required to start the API, and neither is returned by any route.
+The backend is a FastAPI application in `backend/`. `create_app()` builds the process, stores settings on `app.state`, and attaches CORS. Origins must be explicit `http` or `https` URLs. A wildcard is a startup error. `APP_ENV=production` also rejects an origin that is not `https`. `TRUSTED_PROXIES` lists proxy IPs that may supply `X-Forwarded-For`. Any other peer is limited by its own address, so a caller cannot rotate the file-check key by sending that header. The limiter keeps a bounded set of recent keys inside one process. It is not shared across hosts. The optional Gemini key and the optional Firebase Admin credentials are backend settings. Neither is required to start the API, and neither is returned by any route. `backend/Procfile` binds `0.0.0.0` and `${PORT:-8000}` for a host that sets `PORT`.
 
 `GET /api/health` keeps its shape. `status: "ok"` means the process handled the request. The Firebase check stays `not_configured` because this route does not call Firebase. Without Admin credentials its detail says Firebase is not connected. With credentials, the detail says they are present and that the check did not call Firebase. The Gemini check also stays `not_configured`: this route does not call Gemini. When a key is set, the Gemini detail says so. A complete payable tariff stays not connected. The tariff check stays `not_configured` because the packaged schedules do not contain a complete payable bill. The frontend checks that JSON shape before showing it.
 
@@ -39,7 +39,7 @@ The backend is a FastAPI application in `backend/`. `create_app()` builds the pr
 - `app/repositories/meter_ledger.py` is the storage boundary for the meter route. That route still retains nothing. `user_records.py` and `user_files.py` store confirmed account data when Firebase is configured. Tests inject in-memory versions of those stores.
 - `app/auth/` verifies Firebase ID tokens with the Admin SDK. A missing configuration does not treat the caller as a signed-in user. Tests use `FakeTokenVerifier`.
 - `app/integrations/gemini/` calls the Gemini SDK for bill documents and meter photos. Tests replace that client. Nothing else imports it to calculate money.
-- `tests/` covers health, CORS, settings, the data contracts, tariff files, tariff calculations, bill extraction with a fake Gemini client, and account ownership with a fake token verifier. Synthetic rates live in the tests and are labeled as fixtures.
+- `tests/` covers health, CORS, settings, the data contracts, tariff files, tariff calculations, bill extraction with a fake Gemini client, account ownership with a fake token verifier, and the file-check limiter. Synthetic rates live in the tests and are labeled as fixtures. `firebase/rules.test.mjs` runs the Firestore and Storage rules in the emulator.
 
 The meter route and the bill extraction route do not retain uploads. Account routes can retain a confirmed record or a file after an explicit choice, and only for the UID in the verified token.
 

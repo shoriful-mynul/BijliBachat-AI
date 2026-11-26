@@ -61,11 +61,20 @@ If the bucket is unset, the file endpoint returns `503` and says the file was no
 
 ## Security rules
 
-`firebase/firestore.rules` and `firebase/storage.rules` deny every path, then allow a user to read and write only under `users/{uid}` when `request.auth.uid == uid`. Creates and updates must keep `owner_uid` equal to that uid. Storage writes must be under 8 MB and one of JPEG, PNG, WebP, or PDF. There is no `allow read, write: if true`.
+`firebase/firestore.rules` and `firebase/storage.rules` deny every path, then allow a user to read and write only under `users/{uid}` when `request.auth.uid == uid`. Creates and updates must keep `owner_uid` equal to that uid. Storage writes must be at most 8 MB and one of JPEG, PNG, WebP, or PDF. There is no `allow read, write: if true`.
 
 The Admin SDK bypasses these rules. The API check is the layer that protects server writes. The rules are the layer that protects a direct client SDK request. Both are required. `firebase.json` points the emulators at Auth `9099`, Firestore `8088`, and Storage `9199`.
 
-This workspace has Java 21 and does not have the Firebase CLI emulator binaries installed. The automated tests therefore use the in-memory verifier, record store, and file store. They do not prove the rules engine itself. Loading the emulator and running a rules suite against those files is the remaining check for direct client access.
+`firebase/rules.test.mjs` runs against the Firestore and Storage emulators. From `firebase/`:
+
+```bash
+npm ci
+npm test
+```
+
+That command is `firebase emulators:exec --config ../firebase.json --only firestore,storage --project demo-bijlibachat`. The project id starts with `demo-`, so the emulator does not need production credentials. The suite checks anonymous denial, cross-user read/update/delete, a forged `owner_uid`, default-deny paths, allowed access to the caller’s own records, unsupported Storage content types, and a file larger than 8 MB.
+
+Executed in this environment after the emulator jars downloaded: 2 passed, 0 failed. The in-memory API tests remain the check for token verification. The emulator tests are the check for the rules engine. The Admin SDK still bypasses rules.
 
 ## Local records and migration
 
@@ -127,9 +136,9 @@ A signed-in Firebase session was not opened. This environment has no public Fire
 
 ## Known limits
 
-- The rules files are checked as source. The emulator suite was not executed here, so direct client SDK denial still needs that run or a deployed ruleset.
+- The emulator suite passed for the rules in this repository. A deployed Firebase project still needs those same rules published before a real client SDK is pointed at it.
 - The Admin SDK bypasses rules. A bug in the API would not be stopped by the rules.
-- The file-check limit is per process and per client address, not a global quota.
+- The file-check limit is per process and per client address, not a global quota. `X-Forwarded-For` is ignored unless the immediate peer is listed in `TRUSTED_PROXIES`. That still does not make the limiter a distributed control.
 - The same record id is never updated. A changed local copy is not merged.
 - Theme, language, budgets, and scenario drafts are not copied.
 - Health does not prove that Firebase is reachable.

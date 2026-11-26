@@ -1,6 +1,6 @@
 # Development roadmap
 
-The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 11 are implemented. Part 12 is not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
+The product is built in twelve parts. Parts 1 through 12 are implemented in the repository. No distribution company has a complete payable tariff or a verified Cliff Guard threshold. A public host has not been created from this repository.
 
 ## 1. Project foundation and design system — done
 
@@ -79,12 +79,14 @@ The product is built in twelve parts. A later part is not started because a rout
 - Firestore and Storage rules deny open access and require the authenticated uid. Tests cover tokens, cross-user access, and failed writes with an in-memory verifier and store. They do not need production credentials.
 - Secrets stay in server environment variables. The details, the collection layout, and the limits are in [FIREBASE_INTEGRATION_SECURITY.md](FIREBASE_INTEGRATION_SECURITY.md).
 
-## 12. Deployment and hackathon presentation — not started
+## 12. Deployment and hackathon presentation — done
 
-- Production configuration, locked CORS origins, and a hosted frontend and API.
-- An unverified tariff is still not shown as fact.
-- Real notification delivery, if the presentation needs it, is a separate decision. The header bell stays an honest empty state until then.
+- Production settings reject wildcard and non-HTTPS CORS origins. The API start command binds the host port. Vercel for the Next.js app and Render for FastAPI are documented, with Firebase kept for identity and records. No live deployment was created.
+- GitHub Actions runs the frontend tests, lint, typecheck, and build; the backend test suite; and the Firebase emulator rules tests.
+- Firestore and Storage rules were executed in the emulator. The file-check limiter ignores a spoofed forwarding header unless the peer is a configured proxy, and it drops stale keys.
+- A browser reset clears device household records and leaves the sample overview, theme, and language alone. The demo script is in [HACKATHON_DEMO.md](HACKATHON_DEMO.md). Host steps are in [DEPLOYMENT.md](DEPLOYMENT.md).
+- An unverified tariff is still not shown as fact. The header bell stays an honest empty state. Notification delivery was not added.
 
 ## Still out of scope
 
-Notification delivery, production deployment, and rupee savings from a partial tariff. Meter photos and bill images are still discarded unless a signed-in person explicitly keeps them. A payable production bill and a verified Cliff Guard threshold are also still out of scope until a verified file contains them. Cloud copy is not continuous synchronization.
+Notification delivery, a verified live deployment, and rupee savings from a partial tariff. Meter photos and bill images are still discarded unless a signed-in person explicitly keeps them. A payable production bill and a verified Cliff Guard threshold are also still out of scope until a verified file contains them. Cloud copy is not continuous synchronization. Hosting steps are written; the services themselves were not created.

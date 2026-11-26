@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import Settings, parse_cors_origins
+from app.core.config import Settings, parse_cors_origins, parse_trusted_proxies
 
 
 def test_parse_cors_origins_accepts_explicit_list() -> None:
@@ -52,11 +52,29 @@ def test_settings_do_not_require_secrets() -> None:
         "firebase_private_key",
         "firebase_storage_bucket",
         "extract_rate_limit_per_minute",
+        "trusted_proxies",
     }
     assert settings.app_env == "test"
     assert settings.gemini_api_key is None
     assert settings.gemini_model == "gemini-3.8-flash"
     assert settings.firebase_configured is False
     assert settings.extract_rate_limit_per_minute == 60
+    assert settings.trusted_proxies == []
     assert "secret" not in settings.model_dump()
     assert "key" not in settings.model_dump()
+
+
+def test_production_cors_requires_https_origins() -> None:
+    with pytest.raises(ValidationError, match="HTTPS"):
+        Settings(app_env="production", cors_origins="http://localhost:3000")
+    with pytest.raises(ValidationError, match="wildcard"):
+        Settings(app_env="production", cors_origins="*")
+
+    settings = Settings(app_env="production", cors_origins="https://app.example.com")
+    assert settings.cors_origins == ["https://app.example.com"]
+
+
+def test_trusted_proxies_reject_a_wildcard() -> None:
+    with pytest.raises(ValueError, match="explicit"):
+        parse_trusted_proxies("*")
+    assert parse_trusted_proxies("10.0.0.1, 192.0.2.8") == ["10.0.0.1", "192.0.2.8"]
