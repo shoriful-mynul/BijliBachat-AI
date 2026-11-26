@@ -1,6 +1,6 @@
 # Architecture
 
-BijliBachat AI is a two-part application in one repository. The browser presents the household view. The Python API will own tariff and money calculations. This version builds the boundary and does not implement those calculations.
+BijliBachat AI is a two-part application in one repository. The browser presents the household view. The Python API owns tariff and money calculations. The browser does not call the tariff engine yet.
 
 ## Frontend
 
@@ -21,15 +21,16 @@ The root layout stays statically renderable. Theme preference and the collapsed 
 
 The backend is a FastAPI application in `backend/`. `create_app()` builds the process, stores settings on `app.state`, and attaches CORS. Origins must be explicit `http` or `https` URLs. A wildcard is a startup error. Settings do not read API keys. None are used.
 
-`GET /api/health` is unchanged. `status: "ok"` means the process handled the request. Firebase, Gemini, and tariff configuration stay `not_configured`. The frontend checks that JSON shape before showing it.
+`GET /api/health` keeps its shape. `status: "ok"` means the process handled the request. Firebase, Gemini, and tariff configuration stay `not_configured`. The tariff check stays `not_configured` because the packaged schedules do not contain a complete payable bill. The frontend checks that JSON shape before showing it.
 
 ### Responsibilities
 
-- `app/api/` receives HTTP, returns the health report, and maps an unexpected failure to the public error body. Routes do not calculate a bill and do not open a database.
+- `app/api/` receives HTTP, returns the health report and the tariff responses, and maps an unexpected failure to the public error body. Routes validate input and call services. They do not contain a tariff formula and they do not open a database.
 - `app/core/` holds environment settings.
-- `app/schemas/` holds the contracts: health, household profile, meter checkpoint, trust status, decimal amounts, and `ErrorResponse`.
-- `app/services/` holds application logic. The health report lives here. Future tariff and money calculations belong here too, and they must not import a database client.
-- `tests/` covers the health route, CORS, settings, and the new contracts.
+- `app/schemas/` holds the contracts: health, household profile, meter checkpoint, trust status, decimal amounts, tariff requests and responses, and `ErrorResponse`.
+- `app/tariffs/` holds dated JSON schedules, the availability notes for schedules that are not loaded, and the loader that rejects overlap, invalid bands, and synthetic production files.
+- `app/services/` holds application logic. The health report and `tariff_engine.py` live here. The engine does not import a database client.
+- `tests/` covers health, CORS, settings, the data contracts, tariff files, and tariff calculations. Synthetic rates live in the tests and are labeled as fixtures.
 
 There is no `repositories/` package and no `integrations/` package yet. Empty folders would look like storage that does not exist.
 
@@ -50,7 +51,7 @@ Household and meter models describe records a later stage can store. No route ac
 - Persistence, when a stage asks for it, goes in `app/repositories/`. Services call that boundary. Routes do not.
 - Firebase Authentication, Cloud Firestore, and Firebase Storage, when a stage asks for them, go in `app/integrations/firebase/`. The app does not import or initialize them now.
 - Gemini, when a stage asks for it, goes in `app/integrations/gemini/`. It may extract text. It does not calculate money, and it does not overwrite a Python result.
-- Dated tariff files and the calculation engine belong to later stages. They are not represented by sample rates in this code.
+- Dated tariff files and the calculation engine live in `app/tariffs/` and `app/services/tariff_engine.py`. The format, the IESCO rows that were verified, and the companies that remain unavailable are recorded in [TARIFF_ENGINE.md](TARIFF_ENGINE.md).
 
 No database client, queue, or external SDK is created.
 
@@ -60,7 +61,7 @@ Later stages should keep this direction:
 
 1. A person enters a meter checkpoint, or confirms fields extracted from a photo.
 2. The API validates that input.
-3. Python loads a verified, dated tariff file and calculates units, slab position, and rupees.
+3. Python loads the verified, dated tariff file for that company, category, and billing date, and calculates only the components that file verifies.
 4. The response includes each important number with its trust status.
 5. The interface renders those values. It does not recompute them.
 6. If a bill and the household record disagree, the API can return a possible mismatch. It does not label the household.
@@ -69,8 +70,8 @@ Gemini, once added, may return text and extracted fields. Uncertain fields stay 
 
 ## What this version deliberately leaves open
 
-- The browser still shows a labeled sample household. The API does not register or store one.
-- There is no tariff file and no rate table. The health check records that none is loaded.
+- The browser still shows a labeled sample household. The API does not register or store one, and the overview does not call the tariff API.
+- IESCO residential energy and fixed-charge rows from the company's February 2026 tariff guide are packaged. GST, fuel price adjustment, electricity duty, and TV fee are not in that guide, so no production request returns a payable total. LESCO, K-Electric, and IESCO protected residential consumption have no calculable file. The health check stays `not_configured` for that reason.
 - Household and meter contracts are validated in tests. They are not HTTP endpoints.
 - There is no shared generated client. The frontend type for the health payload is hand-written and checked at runtime. A generator can wait until the API has more than one resource.
 - The demo trust chips use lowercase keys (`verified`, `calculated`, and the rest). The API contract uses the labels `Verified`, `Calculated`, `Extracted`, `Estimated`, and `Unavailable`. The chips are local sample UI. They do not read the API contract yet.
@@ -81,6 +82,6 @@ Gemini, once added, may return text and extracted fields. Uncertain fields stay 
 | --- | --- | --- |
 | Layout, theme, sample copy | Frontend | Frontend |
 | Process health | FastAPI | FastAPI |
-| Tariff rates and bill maths | Not implemented. Python services will own them | Python only, in `app/services/` |
+| Tariff rates and bill maths | Python, in `app/services/tariff_engine.py`, from dated files only. No production payable total yet | Python only |
 | OCR and explanation | Not implemented | Gemini, in `app/integrations/gemini/`, with human confirmation |
 | Stored households and photos | Not implemented. Contracts exist; nothing is saved | Firestore and Storage, behind `app/repositories/` |

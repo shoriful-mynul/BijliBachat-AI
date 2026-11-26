@@ -1,0 +1,84 @@
+{
+  "config_id": "iesco-a1-residential-tou-sro-279-2026",
+  "version": "sro-279-i-2026",
+  "provider_code": "IESCO",
+  "consumer_category": "residential",
+  "tariff_type": "tou",
+  "eligibility": null,
+  "schedule_name": "A-1 Residential time of use",
+  "billing_frequency": "monthly",
+  "effective_from": "2026-02-12",
+  "effective_to": null,
+  "slab_method": "time_of_use",
+  "verification_status": "verified",
+  "synthetic": false,
+  "rounding": {
+    "money_quantum": "0.01",
+    "mode": "half_up",
+    "stage": "component",
+    "source_status": "engine_convention",
+    "note": "The IESCO tariff guide does not state a rounding rule. Each money component is rounded to the nearest paisa, half up. Products stay exact until that step."
+  },
+  "slabs": [],
+  "fixed_charge": {
+    "state": "applicable_verified",
+    "basis": "higher_of_half_sanctioned_load_or_mdi",
+    "rate_per_kw": "675.00",
+    "mdi_optional_through": "2026-02-28",
+    "reason": "The IESCO tariff guide states that time-of-use fixed charges use the higher of 50 percent of sanctioned load and MDI, at Rs 675 per kW. For February 2026, if MDI is not available, 50 percent of sanctioned load is used."
+  },
+  "minimum_charge": {
+    "state": "not_applicable",
+    "reason": "The IESCO tariff guide says the minimum customer charge does not apply where monthly fixed charges apply."
+  },
+  "time_of_use": {
+    "peak_rate_per_kwh": "46.85",
+    "off_peak_rate_per_kwh": "34.53"
+  },
+  "adjustments": [
+    {
+      "code": "gst",
+      "label": "GST",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state GST."
+    },
+    {
+      "code": "fuel_price_adjustment",
+      "label": "Fuel price adjustment",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state a fuel price adjustment for this schedule."
+    },
+    {
+      "code": "electricity_duty",
+      "label": "Electricity duty",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state electricity duty."
+    },
+    {
+      "code": "tv_fee",
+      "label": "TV fee",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state a TV fee."
+    }
+  ],
+  "source": {
+    "issuing_authority": "Islamabad Electric Supply Company (IESCO), publishing the schedule under S.R.O. 279(I)/2026",
+    "document_title": "IESCO Tariff Guide — Applicable Tariff",
+    "source_url": "https://iesco.com.pk/tariff-guide",
+    "notification_date": "2026-02-12",
+    "retrieval_date": "2026-11-26",
+    "reference": "A-1 Residential time-of-use row for sanctioned load of 5 kW and above, and the February 2026 MDI note beneath that table",
+    "verification_status": "verified",
+    "limitations": [
+      "Peak and off-peak rates were read from the IESCO tariff guide on 2026-11-26. The page cites S.R.O. No. 279(I)/2026, February 2026. The day 12 February 2026 is the date K-Electric states for the same SRO at https://ke.com.pk/faqs/. The gazette PDF itself was not retrieved.",
+      "The page does not state the clock hours for peak and off-peak. The caller has to supply those units. A missing part is not treated as zero.",
+      "Fixed charges use the higher of 50 percent of sanctioned load and MDI. The page's February 2026 note allows 50 percent of sanctioned load when MDI is missing. After 28 February 2026 this file does not make that substitution.",
+      "GST, fuel price adjustment, electricity duty, and TV fee are not in this schedule. Energy and fixed-charge figures are not a payable bill.",
+      "No effective end date was published on the page. A later notification is not included in this file."
+    ]
+  }
+}

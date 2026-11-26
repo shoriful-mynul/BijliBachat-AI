@@ -12,8 +12,8 @@ def build_health(settings: Settings) -> HealthResponse:
         version=settings.version,
         environment=settings.app_env,
         detail=(
-            "The API process is running. Firebase, Gemini, and tariff "
-            "configuration are not connected."
+            "The API process is running. Firebase, Gemini, and a complete "
+            "payable tariff are not connected."
         ),
         checked_at=datetime.now(timezone.utc),
         checks=[
@@ -37,7 +37,11 @@ def build_health(settings: Settings) -> HealthResponse:
             HealthCheck(
                 name="tariff_configuration",
                 state="not_configured",
-                detail="No verified, dated tariff file is loaded.",
+                detail=(
+                    "Energy and fixed-charge schedules are packaged for one company. "
+                    "Taxes, duty, and fuel adjustment are not in those files, so a "
+                    "payable total is not configured."
+                ),
             ),
         ],
     )

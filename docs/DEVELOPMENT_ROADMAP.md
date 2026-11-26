@@ -1,6 +1,6 @@
 # Development roadmap
 
-The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1, 2, and 3 are implemented. Parts 4 through 12 are not.
+The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 4 are implemented. Parts 5 through 12 are not. Part 4 does not produce a payable bill for any distribution company.
 
 ## 1. Project foundation and design system — done
 
@@ -23,13 +23,14 @@ The product is built in twelve parts. A later part is not started because a rout
 - Health and CORS behavior are unchanged. Tests do not need production secrets.
 - Firebase, Firestore, Storage, and Gemini have a documented home for later. They are not connected, and no repository returns invented household data.
 
-## 4. Versioned tariff engine — not started
+## 4. Versioned tariff engine — done
 
-- Dated tariff files, with the distribution company, effective dates, and slabs written as data.
-- No universal unit cutoff in code.
-- The API refuses a slab question when the file for that company and date is missing.
-- The interface keeps showing Unavailable and Needs verification until a file is loaded.
-- Protected or non-protected status comes from that file, not from a hardcoded rule.
+- Dated JSON schedules and a Decimal engine. The method is declared on each file: one slab for all units, progressive bands, one previous slab, or time of use. There is no universal unit cutoff in code.
+- IESCO residential lifeline, unprotected, and time-of-use energy and fixed-charge rows were copied from the company's tariff guide for S.R.O. 279(I)/2026. GST, fuel price adjustment, electricity duty, and TV fee are not in that guide, so those calculations have no payable total.
+- Protected residential consumption is not calculated. The guide does not define the one-previous-slab arithmetic, and the engine does not classify a household from the current month's units.
+- LESCO and K-Electric have no loaded rates. The pages that were checked, and what was missing, are recorded in `availability.json`.
+- The API can list files, resolve one scope, and calculate. A missing file, a missing input, or an unverified component returns an unavailable result and does not substitute another rate.
+- The interface is not connected to this engine. It still shows the sample overview. The format and the source notes are in [TARIFF_ENGINE.md](TARIFF_ENGINE.md).
 
 ## 5. Bill auditor and OCR — not started
 
@@ -82,4 +83,4 @@ The product is built in twelve parts. A later part is not started because a rout
 
 ## Still out of scope
 
-Tariff maths, bill calculation, OCR, meter persistence, Cliff Guard rules, forecasting, budgets, appliance savings, sign-in, and notification delivery.
+OCR, meter persistence, Cliff Guard rules, forecasting, budgets, appliance savings, sign-in, and notification delivery. A payable production bill is also still out of scope until a verified file contains every required component.

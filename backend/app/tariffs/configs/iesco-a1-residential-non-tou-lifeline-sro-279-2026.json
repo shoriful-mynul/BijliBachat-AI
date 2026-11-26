@@ -1,0 +1,94 @@
+{
+  "config_id": "iesco-a1-residential-non-tou-lifeline-sro-279-2026",
+  "version": "sro-279-i-2026",
+  "provider_code": "IESCO",
+  "consumer_category": "residential",
+  "tariff_type": "non_tou",
+  "eligibility": "lifeline",
+  "schedule_name": "A-1 Residential",
+  "billing_frequency": "monthly",
+  "effective_from": "2026-02-12",
+  "effective_to": null,
+  "slab_method": "single_slab",
+  "verification_status": "verified",
+  "synthetic": false,
+  "rounding": {
+    "money_quantum": "0.01",
+    "mode": "half_up",
+    "stage": "component",
+    "source_status": "engine_convention",
+    "note": "The IESCO tariff guide does not state a rounding rule. Each money component is rounded to the nearest paisa, half up. Products stay exact until that step."
+  },
+  "slabs": [
+    {
+      "lower_exclusive_kwh": "0",
+      "upper_inclusive_kwh": "50",
+      "rate_per_kwh": "3.95"
+    },
+    {
+      "lower_exclusive_kwh": "50",
+      "upper_inclusive_kwh": "100",
+      "rate_per_kwh": "7.74"
+    }
+  ],
+  "fixed_charge": {
+    "state": "not_applicable",
+    "reason": "The IESCO tariff guide shows no fixed charge for lifeline residential consumers."
+  },
+  "minimum_charge": {
+    "state": "applicable_verified",
+    "applies_when": "zero_consumption",
+    "single_phase_amount": "75.00",
+    "three_phase_amount": "150.00",
+    "reason": "The IESCO tariff guide states a minimum monthly customer charge of Rs 75 single-phase and Rs 150 three-phase when no energy is consumed and fixed charges do not apply."
+  },
+  "time_of_use": null,
+  "adjustments": [
+    {
+      "code": "gst",
+      "label": "GST",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state GST."
+    },
+    {
+      "code": "fuel_price_adjustment",
+      "label": "Fuel price adjustment",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state a fuel price adjustment for this schedule."
+    },
+    {
+      "code": "electricity_duty",
+      "label": "Electricity duty",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state electricity duty."
+    },
+    {
+      "code": "tv_fee",
+      "label": "TV fee",
+      "state": "unavailable",
+      "required_for_payable": true,
+      "reason": "The IESCO tariff guide for S.R.O. 279(I)/2026 does not state a TV fee."
+    }
+  ],
+  "source": {
+    "issuing_authority": "Islamabad Electric Supply Company (IESCO), publishing the schedule under S.R.O. 279(I)/2026",
+    "document_title": "IESCO Tariff Guide — Applicable Tariff",
+    "source_url": "https://iesco.com.pk/tariff-guide",
+    "notification_date": "2026-02-12",
+    "retrieval_date": "2026-11-26",
+    "reference": "A-1 Residential table, lifeline rows, and the minimum-charge note beneath that table",
+    "verification_status": "verified",
+    "limitations": [
+      "Rates were read from the IESCO tariff guide on 2026-11-26. The page cites S.R.O. No. 279(I)/2026, February 2026. The day 12 February 2026 is the date K-Electric states for the same SRO at https://ke.com.pk/faqs/. The gazette PDF itself was not retrieved.",
+      "The guide lists separate rows named Up to 50 Units (Lifeline) and 01-100 Units (Lifeline). Those labels would overlap if both meant every unit from 1 through 100. They are stored as mutually exclusive bands: above 0 and up to 50, then above 50 and up to 100. The selected band's rate applies to all units.",
+      "The guide says lifeline consumers do not receive the benefit of one previous slab. This file uses the single applicable slab method.",
+      "This file does not decide whether a household is lifeline. The caller has to confirm that category. Consumption in the current month is not used to classify it.",
+      "Consumption above 100 kWh is not given a rate in this file, and the household is not moved to another category.",
+      "GST, fuel price adjustment, electricity duty, and TV fee are not in this schedule. Calculated energy or minimum figures are not a payable bill.",
+      "No effective end date was published on the page. A later notification is not included in this file."
+    ]
+  }
+}

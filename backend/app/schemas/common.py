@@ -24,7 +24,7 @@ class TrustStatus(StrEnum):
     UNAVAILABLE = "Unavailable"
 
 
-def _reject_unsafe_decimal_input(value: object) -> object:
+def reject_unsafe_decimal_input(value: object) -> object:
     if isinstance(value, bool):
         raise ValueError("Enter a decimal string or a whole number.")
     if isinstance(value, float):
@@ -49,7 +49,7 @@ def _as_utc(value: datetime) -> datetime:
 
 KilowattHours = Annotated[
     Decimal,
-    BeforeValidator(_reject_unsafe_decimal_input),
+    BeforeValidator(reject_unsafe_decimal_input),
     Field(
         ge=0,
         max_digits=12,
@@ -60,7 +60,7 @@ KilowattHours = Annotated[
 
 MoneyAmount = Annotated[
     Decimal,
-    BeforeValidator(_reject_unsafe_decimal_input),
+    BeforeValidator(reject_unsafe_decimal_input),
     Field(
         ge=0,
         max_digits=14,
