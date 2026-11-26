@@ -157,16 +157,17 @@ def delete_record(collection: str, record_id: str, request: Request) -> JSONResp
     identity = _identity(request)
     if isinstance(identity, JSONResponse):
         return identity
+    if collection == "retained_files":
+        return _delete_retained_record(request, identity.uid, record_id)
     if collection not in WRITABLE_COLLECTIONS:
         return _error(404, ErrorCode.NOT_FOUND, _NOT_FOUND)
-    file_note = _delete_linked_file(request, identity.uid, collection, record_id)
     try:
         removed = request.app.state.record_store.delete(identity.uid, collection, record_id)
     except StoreError:
         return _error(503, ErrorCode.UNAVAILABLE, "The record was not removed.")
     if not removed:
         return _error(404, ErrorCode.NOT_FOUND, _NOT_FOUND)
-    return JSONResponse({"removed": True, "file": file_note})
+    return JSONResponse({"removed": True, "file": "none"})
 
 
 @router.post("/import")
@@ -308,16 +309,18 @@ async def retain_file(
         "byte_size": len(content),
         "consent": "retain_in_account",
     }
+    uploaded = False
     try:
         file_store.put(identity.uid, file_id, content, media_type)
+        uploaded = True
         request.app.state.record_store.put(identity.uid, "retained_files", file_id, metadata)
     except StoreError:
-        try:
-            file_store.delete(identity.uid, file_id)
-        except StoreError:
-            logger.warning("account file cleanup failed")
+        if uploaded:
+            _discard_uploaded_file(file_store, identity.uid, file_id)
         return _error(503, ErrorCode.UNAVAILABLE, _FILE_NOT_STORED)
     except Exception:
+        if uploaded:
+            _discard_uploaded_file(file_store, identity.uid, file_id)
         logger.warning("account file write failed")
         return _error(503, ErrorCode.UNAVAILABLE, _FILE_NOT_STORED)
     return JSONResponse(
@@ -397,10 +400,20 @@ def _model_from(collection: str, document: dict):
     return _MODELS[collection].model_validate(document)
 
 
-def _delete_linked_file(request: Request, uid: str, collection: str, record_id: str) -> str:
-    if collection != "retained_files":
-        return "none"
-    return "removed" if _delete_owned_file(request, uid, record_id) else "not_removed"
+def _discard_uploaded_file(file_store, uid: str, file_id: str) -> None:
+    try:
+        file_store.delete(uid, file_id)
+    except Exception:
+        logger.warning("account file cleanup failed")
+
+
+def _delete_retained_record(request: Request, uid: str, record_id: str) -> JSONResponse:
+    removed = _delete_owned_file(request, uid, record_id)
+    if removed is None:
+        return _error(503, ErrorCode.UNAVAILABLE, "The record was not removed.")
+    if not removed:
+        return _error(404, ErrorCode.NOT_FOUND, _NOT_FOUND)
+    return JSONResponse({"removed": True, "file": "removed"})
 
 
 def _delete_owned_file(request: Request, uid: str, file_id: str) -> bool | None:
@@ -408,8 +421,8 @@ def _delete_owned_file(request: Request, uid: str, file_id: str) -> bool | None:
     if file_store is None:
         return False
     try:
-        removed = file_store.delete(uid, file_id)
-        request.app.state.record_store.delete(uid, "retained_files", file_id)
+        object_removed = file_store.delete(uid, file_id)
+        record_removed = request.app.state.record_store.delete(uid, "retained_files", file_id)
     except StoreError:
         return None
-    return removed
+    return object_removed or record_removed
