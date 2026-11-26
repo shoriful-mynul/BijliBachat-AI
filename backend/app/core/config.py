@@ -65,10 +65,22 @@ class Settings(BaseSettings):
     gemini_api_key: str | None = Field(default=None, repr=False)
     gemini_model: str = Field(default="gemini-3.8-flash", min_length=1, max_length=80)
     gemini_timeout_seconds: int = Field(default=45, ge=5, le=120)
+    firebase_project_id: str | None = None
+    firebase_client_email: str | None = None
+    firebase_private_key: str | None = Field(default=None, repr=False)
+    firebase_storage_bucket: str | None = None
+    extract_rate_limit_per_minute: int = Field(default=60, ge=0, le=600)
 
-    @field_validator("gemini_api_key", mode="before")
+    @field_validator(
+        "gemini_api_key",
+        "firebase_project_id",
+        "firebase_client_email",
+        "firebase_private_key",
+        "firebase_storage_bucket",
+        mode="before",
+    )
     @classmethod
-    def blank_gemini_key_is_unset(cls, value: object) -> object:
+    def blank_secret_is_unset(cls, value: object) -> object:
         if isinstance(value, str) and not value.strip():
             return None
         return value
@@ -85,6 +97,17 @@ class Settings(BaseSettings):
     @property
     def version(self) -> str:
         return get_version()
+
+    @property
+    def firebase_configured(self) -> bool:
+        """True only when the server has Admin credentials. Tests leave these unset."""
+        return bool(
+            self.firebase_project_id and self.firebase_client_email and self.firebase_private_key
+        )
+
+    @property
+    def firebase_storage_configured(self) -> bool:
+        return self.firebase_configured and bool(self.firebase_storage_bucket)
 
 
 @lru_cache

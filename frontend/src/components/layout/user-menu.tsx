@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Settings } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
+import { useAuth } from "@/components/auth/auth-provider";
 import { useI18n } from "@/components/i18n/language-provider";
 import { demoOverview } from "@/features/overview/demo-data";
 
@@ -17,7 +18,18 @@ export function UserMenu({ open, onOpen, onClose }: UserMenuProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const settingsRef = useRef<HTMLAnchorElement>(null);
   const { t } = useI18n();
+  const auth = useAuth();
   const household = demoOverview.household;
+  const view = auth.view;
+  let label: string = household.fullName;
+  let initials: string = household.initials;
+  let detail = view.mode === "local" ? t("shell.localAccount") : t("shell.cloudSignedOut");
+  const signedIn = view.mode === "cloud" && view.phase === "signed-in";
+  if (signedIn) {
+    label = view.email;
+    initials = view.email.slice(0, 1).toUpperCase();
+    detail = t("shell.signedInAs", { email: view.email });
+  }
 
   useEffect(() => {
     if (!open) {
@@ -59,13 +71,15 @@ export function UserMenu({ open, onOpen, onClose }: UserMenuProps) {
           className="grid h-8 w-8 place-items-center rounded-full bg-raised font-display text-xs font-semibold"
           aria-hidden="true"
         >
-          {household.initials}
+          {initials}
         </span>
         <span className="hidden text-start lg:block" aria-hidden="true">
-          <span className="block text-sm font-medium leading-tight">
-            <bdi>{household.fullName}</bdi>
+          <span className="block max-w-40 truncate text-sm font-medium leading-tight">
+            <bdi>{label}</bdi>
           </span>
-          <span className="block text-xs text-muted">{t("shell.sampleHousehold")}</span>
+          <span className="block text-xs text-muted">
+            {signedIn ? t("shell.sampleNote") : t("shell.sampleHousehold")}
+          </span>
         </span>
       </button>
       {open ? (
@@ -76,10 +90,22 @@ export function UserMenu({ open, onOpen, onClose }: UserMenuProps) {
           className="absolute end-0 z-50 mt-2 w-[min(18rem,calc(100vw-2rem))] rounded-2xl border border-line bg-card p-3 text-foreground"
         >
           <p className="px-2 text-sm font-semibold">
-            <bdi>{household.fullName}</bdi>
+            <bdi>{label}</bdi>
           </p>
-          <p className="px-2 text-xs text-muted">{t("shell.notSignedIn")}</p>
-          <p className="mt-2 px-2 text-sm leading-6 text-muted">{t("shell.signInLater")}</p>
+          <p className="mt-2 px-2 text-sm leading-6 text-muted">{detail}</p>
+          {signedIn ? (
+            <button
+              type="button"
+              role="menuitem"
+              className="mt-2 flex min-h-12 w-full items-center rounded-xl px-2 text-start text-sm font-medium hover:bg-raised"
+              onClick={() => {
+                void auth.signOut();
+                onClose();
+              }}
+            >
+              {t("shell.signOut")}
+            </button>
+          ) : null}
           <Link
             ref={settingsRef}
             href="/settings"

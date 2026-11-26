@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { FileSearch } from "lucide-react";
 import { LocalizedNotice, SourceText } from "@/components/i18n/source-text";
+import { useAuth } from "@/components/auth/auth-provider";
 import { useI18n } from "@/components/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Select } from "@/components/ui/select";
+import { accountRequest, retainOriginal } from "@/lib/account/api";
 import { getApiBaseUrl } from "@/lib/health";
 import type { DataTrustStatus } from "@/types/trust";
 
@@ -248,13 +250,18 @@ async function readError(response: Response): Promise<string> {
 
 export function BillAuditor() {
   const { t } = useI18n();
+  const auth = useAuth();
   const apiBase = getApiBaseUrl();
+  const signedIn = auth.view.mode === "cloud" && auth.view.phase === "signed-in";
   const abortRef = useRef<AbortController | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [step, setStep] = useState<"empty" | "uploading" | "review" | "auditing">("empty");
   const [draft, setDraft] = useState<ExtractionDraft | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [reviewed, setReviewed] = useState(false);
+  const [keepFile, setKeepFile] = useState(false);
+  const [keepAudit, setKeepAudit] = useState(false);
+  const [keepNote, setKeepNote] = useState<string | null>(null);
   const [report, setReport] = useState<AuditReport | null>(null);
   const [complaint, setComplaint] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -282,6 +289,9 @@ export function BillAuditor() {
     setDraft(null);
     setForm(emptyForm);
     setReviewed(false);
+    setKeepFile(false);
+    setKeepAudit(false);
+    setKeepNote(null);
     setReport(null);
     setComplaint(null);
     setError(null);
@@ -363,6 +373,29 @@ export function BillAuditor() {
       }
       setReport(payload);
       setStep("review");
+      if (signedIn && apiBase && (keepAudit || (keepFile && file))) {
+        const token = await auth.getToken();
+        const notes: string[] = [];
+        if (keepAudit) {
+          const id = window.crypto.randomUUID();
+          const saved = await accountRequest(`${apiBase}/api/account/records/bill_audits/${id}`, token, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id,
+              saved_at: new Date().toISOString(),
+              confirmation: "user_confirmed",
+              bill: auditBody(form),
+            }),
+          });
+          notes.push(t(saved.ok ? "account.auditStored" : "account.auditNotStored"));
+        }
+        if (keepFile && file) {
+          const kept = await retainOriginal(apiBase, token, file, "bill");
+          notes.push(t(kept.ok ? "account.fileStored" : "account.fileNotStored"));
+        }
+        setKeepNote(notes.join(" "));
+      }
     } catch {
       setError("The audit could not be completed.");
       setStep("review");
@@ -405,6 +438,7 @@ export function BillAuditor() {
           {t("bill.uploadTitle")}
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{t("bill.uploadHelp")}</p>
+        {signedIn ? null : <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{t("account.localFiles")}</p>}
         {!apiBase ? (
           <p className="mt-3 text-sm" role="alert">
             {t("common.apiMissing")}
@@ -560,6 +594,21 @@ export function BillAuditor() {
               />
             ))}
           </div>
+          {signedIn ? (
+            <div className="mt-5 flex flex-col gap-3">
+              <label className="flex min-h-12 items-center gap-3 text-sm">
+                <input type="checkbox" className="h-5 w-5" checked={keepAudit} onChange={(event) => setKeepAudit(event.target.checked)} />
+                {t("account.auditKeep")}
+              </label>
+              <label className="flex min-h-12 items-center gap-3 text-sm">
+                <input type="checkbox" className="h-5 w-5" checked={keepFile} onChange={(event) => setKeepFile(event.target.checked)} />
+                {t("account.fileKeep")}
+              </label>
+              <p className="text-sm leading-6 text-muted">{t("account.fileKeepHint")}</p>
+            </div>
+          ) : (
+            <p className="mt-5 text-sm leading-6 text-muted">{t("account.localFiles")}</p>
+          )}
           <label className="mt-5 flex min-h-12 items-center gap-3 text-sm">
             <input
               type="checkbox"
@@ -589,6 +638,7 @@ export function BillAuditor() {
             <span className="text-sm text-muted">{t("bill.confirmedByYou")}</span>
           </div>
           <p className="mt-2 max-w-2xl text-sm leading-6"><SourceText>{report.explanation}</SourceText></p>
+          {keepNote ? <p className="mt-2 text-sm leading-6" role="status">{keepNote}</p> : null}
           <p className="mt-2 text-sm text-muted">
             <bdi>{report.provider_code}</bdi> · <bdi>{report.consumer_category}</bdi> · <bdi>{report.billing_period}</bdi>
             {report.config_id ? <> · <bdi>{report.config_id} {report.config_version ?? ""}</bdi></> : ` · ${t("bill.noConfig")}`}

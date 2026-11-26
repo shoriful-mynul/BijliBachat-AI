@@ -9,6 +9,7 @@ description = "BijliBachat AI API. Dated tariff files, a Decimal calculation eng
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<1",
+  "firebase-admin>=6.6,<7",
   "google-genai>=1.75,<2",
   "pydantic>=2.10,<3",
   "python-multipart>=0.0.20,<1",

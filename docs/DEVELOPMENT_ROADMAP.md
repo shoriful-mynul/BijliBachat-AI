@@ -1,6 +1,6 @@
 # Development roadmap
 
-The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 10 are implemented. Parts 11 and 12 are not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
+The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 11 are implemented. Part 12 is not. No distribution company has a complete payable tariff or a verified Cliff Guard threshold.
 
 ## 1. Project foundation and design system — done
 
@@ -71,13 +71,13 @@ The product is built in twelve parts. A later part is not started because a rout
 - Navigation, page copy, forms, empty states, trust labels, and chart tables use one typed dictionary. API sentences stay in English and are isolated in Urdu layout. Meter, forecast, appliance, and history formulas are unchanged. PKR savings stay unavailable.
 - Labels, keyboard dialogs, focus, and chart text alternatives were checked with the existing pages. This is not a certified WCAG audit. See [LOCALIZATION_ACCESSIBILITY.md](LOCALIZATION_ACCESSIBILITY.md).
 
-## 11. Integration, security, and testing — not started
+## 11. Integration, security, and testing — done
 
-- Firebase Authentication.
-- Cloud Firestore for household data, behind the repository boundary.
-- Firebase Storage for bill and meter photos.
-- Secrets stay on the server or in the platform secret store, never in the frontend bundle.
-- Broader security tests around those connections. Current tests cover contracts, health, tariffs, and bill extraction with a fake Gemini client.
+- Email and password sign-in through Firebase Authentication when the public client settings are present. Without them, Settings stays in local/demo mode and does not report a successful sign-in.
+- Confirmed household records can be stored under `users/{uid}/...` when the API has Firebase Admin credentials. The UID comes from the verified token. An unconfirmed extraction is rejected. The first saved id is kept.
+- A bill or meter file is stored only after an explicit choice, and only when a storage bucket is configured. The meter and bill calculation routes still discard uploads.
+- Firestore and Storage rules deny open access and require the authenticated uid. Tests cover tokens, cross-user access, and failed writes with an in-memory verifier and store. They do not need production credentials.
+- Secrets stay in server environment variables. The details, the collection layout, and the limits are in [FIREBASE_INTEGRATION_SECURITY.md](FIREBASE_INTEGRATION_SECURITY.md).
 
 ## 12. Deployment and hackathon presentation — not started
 
@@ -87,4 +87,4 @@ The product is built in twelve parts. A later part is not started because a rout
 
 ## Still out of scope
 
-Sign-in, notification delivery, durable meter storage, and rupee savings from a partial tariff. Meter photos and bill images are read temporarily and are not stored. A payable production bill and a verified Cliff Guard threshold are also still out of scope until a verified file contains them.
+Notification delivery, production deployment, and rupee savings from a partial tariff. Meter photos and bill images are still discarded unless a signed-in person explicitly keeps them. A payable production bill and a verified Cliff Guard threshold are also still out of scope until a verified file contains them. Cloud copy is not continuous synchronization.

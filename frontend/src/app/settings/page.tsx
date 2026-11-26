@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppearanceForm } from "@/features/settings/appearance-form";
+import { AccountSection } from "@/features/settings/account-section";
 import { LanguageForm } from "@/features/settings/language-form";
 import { FutureSettings } from "@/features/settings/future-settings";
 import { navigationItem } from "@/lib/navigation";
@@ -16,6 +17,7 @@ export default function SettingsPage() {
     <div className="flex max-w-2xl flex-col gap-6">
       <LanguageForm />
       <AppearanceForm />
+      <AccountSection />
       <FutureSettings />
     </div>
   );

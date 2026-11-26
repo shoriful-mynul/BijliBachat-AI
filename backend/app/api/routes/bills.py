@@ -10,6 +10,7 @@ from app.integrations.gemini.errors import (
     GeminiTimeout,
     GeminiUnavailable,
 )
+from app.api.limits import extraction_limited
 from app.schemas.bill import BillAuditReport, BillExtractionDraft, ComplaintDraft, ConfirmedBillRequest
 from app.schemas.errors import ErrorCode, ErrorResponse
 from app.services.bill_audit import audit_confirmed_bill
@@ -43,6 +44,9 @@ async def create_extraction(
     request: Request,
     file: UploadFile = File(...),
 ) -> BillExtractionDraft | JSONResponse:
+    limited = extraction_limited(request)
+    if limited is not None:
+        return limited
     buffer = bytearray()
     try:
         while True:

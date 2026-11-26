@@ -11,14 +11,7 @@ def build_health(settings: Settings) -> HealthResponse:
         service=settings.service_name,
         version=settings.version,
         environment=settings.app_env,
-        detail=(
-            "The API process is running. Firebase and a complete payable tariff are not connected."
-            if settings.gemini_api_key
-            else (
-                "The API process is running. Firebase, Gemini, and a complete "
-                "payable tariff are not connected."
-            )
-        ),
+        detail=_detail(settings),
         checked_at=datetime.now(timezone.utc),
         checks=[
             HealthCheck(
@@ -30,7 +23,9 @@ def build_health(settings: Settings) -> HealthResponse:
                 name="firebase",
                 state="not_configured",
                 detail=(
-                    "Firebase Authentication, Firestore, and Storage are not connected."
+                    "Firebase credentials are present. This check does not call Firebase."
+                    if settings.firebase_configured
+                    else "Firebase Authentication, Firestore, and Storage are not connected."
                 ),
             ),
             HealthCheck(
@@ -52,4 +47,20 @@ def build_health(settings: Settings) -> HealthResponse:
                 ),
             ),
         ],
+    )
+
+
+def _detail(settings: Settings) -> str:
+    if settings.firebase_configured:
+        return (
+            "The API process is running. Firebase credentials are present. "
+            "This check does not call Firebase. A complete payable tariff is not connected."
+        )
+    if settings.gemini_api_key:
+        return (
+            "The API process is running. Firebase and a complete payable tariff are not connected."
+        )
+    return (
+        "The API process is running. Firebase, Gemini, and a complete "
+        "payable tariff are not connected."
     )
