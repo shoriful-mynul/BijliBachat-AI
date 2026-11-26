@@ -12,7 +12,7 @@ This file is the permanent engineering brief. The Next.js version in `frontend/`
 
 Python is the only place electricity tariff calculations and financial calculations may live. The frontend formats numbers it is given. It does not compute bills, slab crossings, savings, or forecasts.
 
-Gemini, when it is added, is limited to OCR, structured extraction, and natural-language explanation. It must not invent tariff rates, calculate a bill, or change a number that Python produced.
+Gemini is limited to OCR, structured extraction, and natural-language explanation. Bill extraction lives in `app/integrations/gemini/`. It must not invent tariff rates, calculate a bill, or change a number that Python produced.
 
 ## Tariff truth
 
@@ -43,7 +43,7 @@ Keep the interface accessible and usable at 390px, about 768px, and 1440px. Inte
 ## Where work goes
 
 - `frontend/` — Next.js App Router, Blue Hour UI, sample overview.
-- `backend/` — FastAPI. Calculation and validation authority. Household and meter contracts live in `app/schemas/`. Tariff maths lives in `app/services/tariff_engine.py` and reads dated files under `app/tariffs/`. Routes validate requests and call that service. They do not contain tariff formulas or open a database.
+- `backend/` — FastAPI. Calculation and validation authority. Household and meter contracts live in `app/schemas/`. Tariff maths lives in `app/services/tariff_engine.py` and reads dated files under `app/tariffs/`. Bill comparison lives in `app/services/bill_audit.py` and calls that engine. Routes validate requests and call services. They do not contain tariff formulas or open a database.
 - `docs/` — architecture, design system, and the stage plan.
 
-Do not add Firebase, Firestore, Gemini, bill OCR, meter OCR, forecasting, Cliff Guard rules, budgets, or notification delivery until that stage is explicitly requested. Prepare a clean boundary for them instead of stubbing a fake result. Do not add a tariff rate that is not copied from a verified, dated source.
+Do not add Firebase, Firestore, meter OCR, forecasting, Cliff Guard rules, budgets, or notification delivery until that stage is explicitly requested. Do not stub a fake OCR result when Gemini is unavailable. Do not add a tariff rate that is not copied from a verified, dated source.

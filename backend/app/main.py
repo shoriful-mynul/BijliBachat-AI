@@ -18,8 +18,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         description=(
             "The health route reports the process. Tariff routes resolve a dated "
             "configuration and calculate only the components that configuration "
-            "verifies. Household and meter contracts are not exposed as routes. "
-            "Firebase and Gemini are not connected. Field validation errors keep "
+            "verifies. Bill routes read a document with Gemini when a server key "
+            "is configured, then compare values a person confirmed. Household and "
+            "meter contracts are not exposed as routes. Field validation errors keep "
             "FastAPI's detail list. Unexpected failures use ErrorResponse and do "
             "not include the exception text."
         ),

@@ -1,6 +1,6 @@
 # Development roadmap
 
-The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 4 are implemented. Parts 5 through 12 are not. Part 4 does not produce a payable bill for any distribution company.
+The product is built in twelve parts. A later part is not started because a route, a schema, or a sentence exists. Parts 1 through 5 are implemented. Parts 6 through 12 are not. No distribution company has a complete payable tariff.
 
 ## 1. Project foundation and design system — done
 
@@ -13,7 +13,7 @@ The product is built in twelve parts. A later part is not started because a rout
 
 - Shared shell: grouped sidebar, header, and phone navigation.
 - `/` redirects to `/dashboard`.
-- Cliff Guard, Bill Auditor, Meter Readings, Action Plan, Consumption History, and Settings are reachable. Settings can change the theme on this device. The other screens say the work is not available yet.
+- Cliff Guard, Bill Auditor, Meter Readings, Action Plan, Consumption History, and Settings are reachable. Settings can change the theme on this device. Bill Auditor was a placeholder in this part and is implemented in Part 5. The other screens say the work is not available yet.
 
 ## 3. Backend foundation and data architecture — done
 
@@ -30,14 +30,15 @@ The product is built in twelve parts. A later part is not started because a rout
 - Protected residential consumption is not calculated. The guide does not define the one-previous-slab arithmetic, and the engine does not classify a household from the current month's units.
 - LESCO and K-Electric have no loaded rates. The pages that were checked, and what was missing, are recorded in `availability.json`.
 - The API can list files, resolve one scope, and calculate. A missing file, a missing input, or an unverified component returns an unavailable result and does not substitute another rate.
-- The interface is not connected to this engine. It still shows the sample overview. The format and the source notes are in [TARIFF_ENGINE.md](TARIFF_ENGINE.md).
+- The sample overview is not connected to this engine. Bill Auditor calls it after a person confirms a bill. The format and the source notes are in [TARIFF_ENGINE.md](TARIFF_ENGINE.md).
 
-## 5. Bill auditor and OCR — not started
+## 5. Bill auditor and OCR — done
 
-- Upload a bill and use Gemini for OCR and structured extraction only.
-- Uncertain fields stay unconfirmed until a person accepts them.
-- Compare a confirmed bill with the Python result for the same cycle.
-- Disagreements are labeled "Possible mismatch". The word "fraud" is not used.
+- `POST /api/bills/extractions` accepts a JPEG, PNG, WebP, or PDF up to 8 MB, checks the file signature, and asks Gemini for a structured reading. The draft is `confirmed: false`. A missing key or a bad model response returns 503 and does not invent fields.
+- The review screen keeps every extracted field editable. The audit accepts `confirmation: "user_confirmed"` and the submitted values. Confidence does not confirm a field.
+- The audit calls the existing tariff engine and compares equivalent components. A difference above 1.00 PKR is a possible mismatch. The bill total is not compared with an energy-and-fixed subtotal.
+- A complaint draft is a local template. It is not submitted.
+- Bills are not stored. The details are in [BILL_AUDITOR.md](BILL_AUDITOR.md).
 
 ## 6. Meter capture and Cliff Guard — not started
 
@@ -73,7 +74,7 @@ The product is built in twelve parts. A later part is not started because a rout
 - Cloud Firestore for household data, behind the repository boundary.
 - Firebase Storage for bill and meter photos.
 - Secrets stay on the server or in the platform secret store, never in the frontend bundle.
-- Broader security tests around those connections. The current tests cover contracts, health, and CORS only.
+- Broader security tests around those connections. Current tests cover contracts, health, tariffs, and bill extraction with a fake Gemini client.
 
 ## 12. Deployment and hackathon presentation — not started
 
@@ -83,4 +84,4 @@ The product is built in twelve parts. A later part is not started because a rout
 
 ## Still out of scope
 
-OCR, meter persistence, Cliff Guard rules, forecasting, budgets, appliance savings, sign-in, and notification delivery. A payable production bill is also still out of scope until a verified file contains every required component.
+Meter photo OCR, meter persistence, Cliff Guard rules, forecasting, budgets, appliance savings, sign-in, and notification delivery. Bill images are read temporarily and are not stored. A payable production bill is also still out of scope until a verified file contains every required component.

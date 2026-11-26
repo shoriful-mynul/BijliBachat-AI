@@ -38,7 +38,7 @@ export type PlaceholderNavigationItem = BaseNavigationItem & {
 };
 
 export type NavigationItem =
-  | (BaseNavigationItem & { status: "sample" | "settings" })
+  | (BaseNavigationItem & { status: "sample" | "settings" | "ready" })
   | PlaceholderNavigationItem;
 
 export const navigationGroups: readonly { id: NavGroupId; label: string }[] = [
@@ -83,16 +83,13 @@ export const navigation: readonly NavigationItem[] = [
     href: "/bill-auditor",
     label: "Bill Auditor",
     shortLabel: "Auditor",
-    description: "Upload and review a bill later. This version does not read bills.",
+    description:
+      "Upload a bill, review what was read, and compare confirmed amounts with the tariff engine.",
     icon: FileSearch,
     group: "prevent",
     mobile: "more",
     mobileOrder: 1,
-    status: "placeholder",
-    purpose:
-      "You will be able to upload a bill, review what was read from it, and see if something does not match the household record.",
-    later:
-      "This version does not read bills. If a difference is found later, it is called a possible mismatch. Nothing here judges a bill.",
+    status: "ready",
   },
   {
     href: "/action-plan",
