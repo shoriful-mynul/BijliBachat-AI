@@ -68,7 +68,8 @@ Components live in `frontend/src/components/ui` and share a small prop style: `c
 | Input and Select | Label, optional hint, optional error. Errors use an icon and the word "Error", not color alone. Controls are 48px tall. |
 | SectionHeader | Title, short description, optional actions. |
 | StatCard | One figure, optional demo badge and trust chip. |
-| EmptyState | Used for sections that are not built yet. |
+| EmptyState | Used for a missing page and for short empty explanations. |
+| FeaturePlaceholder | A page that names what a later section will do, and says it is not available yet. |
 | LoadingState | Text plus a spinner, with a `status` role. |
 
 Lucide is the only icon set.
@@ -95,8 +96,8 @@ Mobile first.
 
 | Viewport | Shell |
 | --- | --- |
-| 390×844 | Top bar, single column, bottom navigation. Four destinations plus More. More opens a dialog for Bill Auditor, History, and Settings. |
-| About 768px | Labeled sidebar, no bottom bar. Content stays one column until there is room. |
+| 390×844 | Compact top bar, single column, bottom navigation. Four destinations plus More. More opens a sheet for Bill Auditor, Consumption History, and Settings. |
+| About 768px | Labeled sidebar, no bottom bar. The sidebar can collapse to icons. Content stays one column until there is room. |
 | 1024px and up | Bill and Cliff Guard sit side by side. |
 | 1440px | Content column is capped so the page does not stretch into an empty band. |
 

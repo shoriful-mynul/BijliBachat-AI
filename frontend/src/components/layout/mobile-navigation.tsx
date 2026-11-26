@@ -1,18 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { isNavActive, navigation } from "@/lib/navigation";
+import { NavigationItem } from "@/components/layout/navigation-item";
+import { isNavActive, mobileMore, mobileTabs } from "@/lib/navigation";
 import { cn } from "@/lib/cn";
 
-export function MobileNav() {
+export function MobileNavigation() {
   const pathname = usePathname();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const open = openPath === pathname;
-  const tabs = navigation.filter((item) => item.mobile === "tab");
-  const moreItems = navigation.filter((item) => item.mobile === "more");
+  const tabs = mobileTabs();
+  const moreItems = mobileMore();
   const moreActive = moreItems.some((item) => isNavActive(pathname, item.href));
   const closeSheet = useCallback(() => setOpenPath(null), []);
 
@@ -23,45 +23,30 @@ export function MobileNav() {
         className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-sidebar md:hidden"
       >
         <ul className="grid grid-cols-5 pb-[env(safe-area-inset-bottom)]">
-          {tabs.map((item) => {
-            const active = isNavActive(pathname, item.href);
-            const Icon = item.icon;
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  aria-label={item.label}
-                  className={cn(
-                    "flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-xs font-medium",
-                    active ? "text-foreground" : "text-muted",
-                  )}
-                >
-                  <Icon
-                    className={cn("h-5 w-5", active && "text-aqua")}
-                    aria-hidden="true"
-                  />
-                  <span aria-hidden="true">{item.shortLabel}</span>
-                </Link>
-              </li>
-            );
-          })}
+          {tabs.map((item) => (
+            <li key={item.href}>
+              <NavigationItem item={item} variant="tab" />
+            </li>
+          ))}
           <li>
             <button
               type="button"
               className={cn(
-                "flex min-h-16 w-full flex-col items-center justify-center gap-1 px-1 text-xs font-medium",
-                moreActive || open ? "text-foreground" : "text-muted",
+                "flex min-h-16 w-full flex-col items-center justify-center gap-1 px-1 text-xs",
+                moreActive || open
+                  ? "bg-raised font-semibold text-foreground shadow-[inset_0_2px_0_#42c8e8]"
+                  : "font-medium text-muted",
               )}
               aria-haspopup="dialog"
               aria-expanded={open}
-              onClick={() => setOpenPath(pathname)}
+              aria-label="More sections"
+              onClick={() => setOpenPath(open ? null : pathname)}
             >
               <Menu
                 className={cn("h-5 w-5", (moreActive || open) && "text-aqua")}
                 aria-hidden="true"
               />
-              <span>More</span>
+              <span aria-hidden="true">More</span>
             </button>
           </li>
         </ul>
@@ -72,10 +57,9 @@ export function MobileNav() {
 }
 
 function MoreSheet({ onClose }: { onClose: () => void }) {
-  const pathname = usePathname();
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
-  const moreItems = navigation.filter((item) => item.mobile === "more");
+  const moreItems = mobileMore();
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -121,27 +105,12 @@ function MoreSheet({ onClose }: { onClose: () => void }) {
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
-        <ul className="flex flex-col">
-          {moreItems.map((item) => {
-            const active = isNavActive(pathname, item.href);
-            const Icon = item.icon;
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex min-h-12 items-center gap-3 rounded-xl px-2 text-sm font-medium",
-                    active ? "bg-raised text-foreground" : "text-foreground",
-                  )}
-                  onClick={onClose}
-                >
-                  <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-                  {item.label}
-                </Link>
-              </li>
-            );
-          })}
+        <ul className="flex flex-col gap-1">
+          {moreItems.map((item) => (
+            <li key={item.href}>
+              <NavigationItem item={item} variant="row" onNavigate={onClose} />
+            </li>
+          ))}
         </ul>
       </div>
     </div>

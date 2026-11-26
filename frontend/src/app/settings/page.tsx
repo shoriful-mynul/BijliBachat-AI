@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { Settings } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
 import { AppearanceForm } from "@/features/settings/appearance-form";
-import { SampleProfile } from "@/features/settings/sample-profile";
+import { FutureSettings } from "@/features/settings/future-settings";
 import { navigationItem } from "@/lib/navigation";
 
 const page = navigationItem("/settings");
@@ -14,14 +12,9 @@ export const metadata: Metadata = {
 
 export default function SettingsPage() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex max-w-2xl flex-col gap-6">
       <AppearanceForm />
-      <SampleProfile />
-      <EmptyState
-        icon={Settings}
-        title="Household settings are not saved yet"
-        description="Distribution company, tariff, and notification preferences will be stored in a later stage. The theme above stays on this device only."
-      />
+      <FutureSettings />
     </div>
   );
 }

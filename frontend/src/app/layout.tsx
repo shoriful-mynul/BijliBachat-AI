@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Manrope, Noto_Nastaliq_Urdu } from "next/font/google";
 import { AppShell } from "@/components/layout/app-shell";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { sidebarInitScript } from "@/lib/sidebar";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: sidebarInitScript }} />
       </head>
       <body className="min-h-dvh bg-background font-sans text-foreground">
         <ThemeProvider>

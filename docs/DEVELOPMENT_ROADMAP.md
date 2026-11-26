@@ -6,7 +6,7 @@ Stages are sequential. A later stage is not started by the existence of a route 
 
 - Monorepo layout, Next.js frontend, FastAPI backend.
 - Blue Hour design system, dark and light themes, and the component set.
-- Application shell and the sample Overview.
+- Application shell and the sample Overview at `/dashboard`. `/` redirects there. Other sections are reachable placeholders. A route does not mean that section is built.
 - Process health endpoint, explicit CORS, and backend tests.
 - Engineering rules for tariff authority, trust labels, and demo data.
 

@@ -6,13 +6,14 @@ BijliBachat AI is a two-part application in one repository. The browser presents
 
 The frontend is a Next.js App Router application in `frontend/`.
 
-- `src/app` defines routes. Overview is a complete sample screen. Cliff Guard, Bill Auditor, Meter Readings, Action Plan, History, and Settings are reachable. Settings can change the theme on this device. The other routes explain what they will do and state that the work is not available yet.
+- `src/app` defines routes. `/` redirects to `/dashboard`. Overview is a complete sample screen. Cliff Guard, Bill Auditor, Meter Readings, Action Plan, History, and Settings are reachable. Settings can change the theme on this device. The other routes explain what they will do and state that the work is not available yet.
+- `src/lib/navigation.ts` is the only route list. The desktop sidebar, mobile tabs, and More sheet read it. Journey groups are Understand, Prevent, Optimize, and Measure. Settings stays with the sample profile, not inside those groups.
 - `src/components/ui` is a small local component set. There is no third-party component kit.
-- `src/components/layout` is the shell: sidebar, header, mobile navigation, and the API status line.
+- `src/components/layout` is the shared shell: sidebar, header, mobile navigation, page container, and the API status line. Pages do not repeat the shell. The sidebar can collapse to icons. That choice is stored on this device, the same way as the theme.
 - `src/features/overview/demo-data.ts` holds the sample figures. Components render those authored values. They do not derive a bill, a slab, or a saving.
 - A short consistency check in that file fails the build if the authored unit total and the daily series drift apart. That check is a content guard, not a billing engine.
 
-The root layout stays statically renderable. Theme preference is applied by a small inline script that reads `localStorage` before paint, then by a client control. The server does not read a theme cookie, so the layout does not depend on the request.
+The root layout stays statically renderable. Theme preference and the collapsed sidebar are applied by small inline scripts that read `localStorage` before paint, then by client controls. The server does not read those choices, so the layout does not depend on the request.
 
 `NEXT_PUBLIC_API_URL` is the only frontend environment value. The service-status footer calls `GET /api/health` and checks the JSON shape before showing it. A missing URL, a network failure, or an unexpected body is shown as unavailable.
 
