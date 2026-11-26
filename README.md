@@ -52,7 +52,7 @@ The repository root is the product. There is no extra nested application folder.
 
 ## Development setup
 
-Requirements: Node.js 20.9 or newer, npm, and Python 3.11 or newer.
+Requirements: Node.js 22 or newer, npm, and Python 3.11 or newer. The frontend tests use Node's type-stripping flag, which Node 20 does not provide.
 
 ```bash
 cp .env.example backend/.env

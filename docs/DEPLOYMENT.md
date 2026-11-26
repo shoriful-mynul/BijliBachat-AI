@@ -103,7 +103,7 @@ The Admin SDK bypasses rules. The API still checks the verified token and writes
 
 `.github/workflows/ci.yml` runs on pull requests and on pushes to `main`:
 
-- Frontend: `npm ci`, `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`.
+- Frontend on Node.js 22: `npm ci`, `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`. Node 20 cannot run the type-stripping test command.
 - Backend: editable install, import `app.main`, `pytest`.
 - Firebase rules: Java 21, `npm ci` in `firebase/`, then the emulator suite.
 
