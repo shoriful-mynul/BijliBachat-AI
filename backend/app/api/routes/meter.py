@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, File, Request, UploadFile
 from fastapi.responses import JSONResponse
 
+from app.api.limits import extraction_limited
 from app.integrations.gemini.client import GoogleGeminiExtractor
 from app.integrations.gemini.errors import (
     GeminiNotConfigured,
@@ -66,6 +67,9 @@ async def extract_meter_photo(
     request: Request,
     file: UploadFile = File(...),
 ) -> MeterExtractionDraft | JSONResponse:
+    limited = extraction_limited(request)
+    if limited is not None:
+        return limited
     buffer = bytearray()
     try:
         while True:

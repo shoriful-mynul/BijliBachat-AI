@@ -47,9 +47,16 @@ def test_settings_do_not_require_secrets() -> None:
         "gemini_api_key",
         "gemini_model",
         "gemini_timeout_seconds",
+        "firebase_project_id",
+        "firebase_client_email",
+        "firebase_private_key",
+        "firebase_storage_bucket",
+        "extract_rate_limit_per_minute",
     }
     assert settings.app_env == "test"
     assert settings.gemini_api_key is None
     assert settings.gemini_model == "gemini-3.8-flash"
+    assert settings.firebase_configured is False
+    assert settings.extract_rate_limit_per_minute == 60
     assert "secret" not in settings.model_dump()
     assert "key" not in settings.model_dump()

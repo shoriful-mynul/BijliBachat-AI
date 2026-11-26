@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Manrope, Noto_Nastaliq_Urdu } from "next/font/google";
+import { AuthProvider } from "@/components/auth/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
+import { readPublicFirebaseConfig } from "@/lib/firebase/public-config";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { LanguageProvider } from "@/components/i18n/language-provider";
 import { languageInitScript } from "@/lib/i18n/language";
@@ -49,6 +51,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const firebaseConfig = readPublicFirebaseConfig({
+  NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+});
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -65,7 +76,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-dvh overflow-x-clip bg-background font-sans text-foreground">
         <ThemeProvider>
           <LanguageProvider>
-            <AppShell>{children}</AppShell>
+            <AuthProvider config={firebaseConfig}>
+              <AppShell>{children}</AppShell>
+            </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

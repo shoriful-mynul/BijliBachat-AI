@@ -1,0 +1,24 @@
+rules_version = '2';
+// No public reads. Object paths are users/{uid}/retained/{fileId}.
+// Direct client writes must match the authenticated uid, the size limit, and the media type.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/retained/{fileId} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType in [
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'application/pdf'
+        ];
+    }
+  }
+}

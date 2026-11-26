@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Gauge } from "lucide-react";
 import { LocalizedNotice, SourceText } from "@/components/i18n/source-text";
+import { useAuth } from "@/components/auth/auth-provider";
 import { useI18n } from "@/components/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { DataTrustChip } from "@/components/ui/data-trust-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
+import { retainOriginal } from "@/lib/account/api";
 import { getApiBaseUrl } from "@/lib/health";
 import type { DataTrustStatus } from "@/types/trust";
 import { householdId, loadReadings, rememberReading, type StoredReading } from "./ledger";
@@ -17,13 +19,17 @@ import type { CliffReport, MeterDraft, ValidationResult } from "./types";
 
 export function MeterCapture() {
   const { t } = useI18n();
+  const auth = useAuth();
   const apiBase = getApiBaseUrl();
+  const signedIn = auth.view.mode === "cloud" && auth.view.phase === "signed-in";
   const abortRef = useRef<AbortController | null>(null);
   const [readings, setReadings] = useState<StoredReading[]>([]);
   const [register, setRegister] = useState("");
   const [readAt, setReadAt] = useState("");
   const [meterReference, setMeterReference] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [keepFile, setKeepFile] = useState(false);
+  const [keepNote, setKeepNote] = useState<string | null>(null);
   const [draft, setDraft] = useState<MeterDraft | null>(null);
   const [extractedValue, setExtractedValue] = useState<string | null>(null);
   const [busy, setBusy] = useState<"upload" | "save" | null>(null);
@@ -152,6 +158,15 @@ export function MeterCapture() {
       );
       setDraft(null);
       setRegister("");
+      if (signedIn && keepFile && file && apiBase) {
+        const token = await auth.getToken();
+        const kept = await retainOriginal(apiBase, token, file, "meter_photo");
+        setKeepNote(t(kept.ok ? "account.fileStored" : "account.fileNotStored"));
+        if (kept.ok) {
+          setFile(null);
+          setKeepFile(false);
+        }
+      }
     }
   }
 
@@ -183,6 +198,18 @@ export function MeterCapture() {
             {t("meter.readPhoto")}
           </Button>
         </div>
+        {signedIn ? (
+          <label className="mt-4 flex min-h-12 items-center gap-3 text-sm">
+            <input type="checkbox" className="h-5 w-5" checked={keepFile} onChange={(event) => setKeepFile(event.target.checked)} />
+            <span>
+              {t("account.fileKeep")}
+              <span className="mt-1 block text-muted">{t("account.fileKeepHint")}</span>
+            </span>
+          </label>
+        ) : (
+          <p className="mt-4 text-sm leading-6 text-muted">{t("account.localFiles")}</p>
+        )}
+        {keepNote ? <p className="mt-2 text-sm leading-6" role="status">{keepNote}</p> : null}
         {busy === "upload" ? (
           <div className="mt-4 flex flex-col gap-3">
             <LoadingState label={t("meter.readingPhoto")} />
