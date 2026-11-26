@@ -1,0 +1,36 @@
+/*
+ * Blue Hour tokens.
+ * Dark is the brand default. Light reassigns the same semantic variables.
+ * Accent hex values stay constant and are used sparingly.
+ */
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #182b43;
+  --foreground: #e7f2f7;
+  --card: #294967;
+  --sidebar: #203a57;
+  --raised: #365a78;
+  --ice: #dcecf3;
+  --ink: #0b1e33;
+  --muted: #c9d8e2;
+  --line: rgba(220, 236, 243, 0.16);
+  --ice-muted: #3e5568;
+  --shadow: none;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --background: #e6f0f5;
+  --foreground: #0b1e33;
+  --card: #ffffff;
+  --sidebar: #f7fbfd;
+  --raised: #e8f1f6;
+  --ice: #dcecf3;
+  --ink: #0b1e33;
+  --muted: #3e5568;
+  --line: rgba(11, 30, 51, 0.12);
+  --ice-muted: #3e5568;
+  --shadow: 0 1px 2px rgba(11, 30, 51, 0.06);
+}

@@ -1,0 +1,22 @@
+---
+description: Blue Hour visual rules for BijliBachat AI
+alwaysApply: true
+---
+
+# Blue Hour
+
+Dark Blue Hour is the primary appearance. A light theme uses the same semantic tokens.
+
+Surfaces: background `#182B43`, sidebar `#203A57`, cards `#294967`, raised `#365A78`, ice panel `#DCECF3`, ink `#0B1E33`.
+
+Accents, used sparingly: aqua `#42C8E8`, teal `#28C5B0`, mint `#8BE0B0`, lime `#C7E86B`, lavender `#B9AEFF`, amber `#FFC36B`, coral `#FF7D83`.
+
+Aim for about 70% calm blue surfaces, 20% lighter slate or neutral surfaces, and 10% accent.
+
+Manrope for headings and prominent rupee amounts. Inter for interface text. JetBrains Mono for meter readings and technical values. Noto Nastaliq Urdu for Urdu, loaded with `next/font/google`.
+
+Glow is allowed only on a live forecast line or the main Cliff Guard gauge once that visualization is real. Do not glow buttons, cards, text, or decorative marks. Do not glow an unverified gauge.
+
+No gradients used as decoration, no heavy glass, no neon styling, and no animation that does not explain a change.
+
+Risk and trust chips always include a word and an icon. Do not communicate risk by color alone.
