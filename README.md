@@ -27,7 +27,7 @@ Planned later, and not connected now: Firebase Authentication, Cloud Firestore, 
 frontend/          Next.js application
   src/app/         Routes and the root layout
   src/components/  ui, layout, and dashboard components
-  src/features/    Overview sample content, settings, Bill Auditor, meter checkpoints, the forecast, and appliances
+  src/features/    Overview sample content, settings, Bill Auditor, meter checkpoints, the forecast, appliances, and history
   src/hooks/       Shared hooks
   src/lib/         Formatting, navigation, theme, health parsing
   src/styles/      Blue Hour tokens
@@ -36,7 +36,7 @@ backend/
   app/api/         HTTP routes and the public error response
   app/core/        Environment configuration
   app/schemas/     Health, household, meter, tariff, bill, trust, and error contracts
-  app/services/    Health, tariff engine, bill audit, meter checks, Cliff Guard, the forecast, and appliances
+  app/services/    Health, tariff engine, bill audit, meter checks, Cliff Guard, the forecast, appliances, and history
   app/repositories/  Meter storage boundary. The API ledger retains nothing
   app/integrations/gemini/  Document extraction client
   app/tariffs/     Dated tariff files and availability notes
@@ -132,6 +132,7 @@ Done in this version:
 - Meter Readings and Cliff Guard. A person confirms a typed or photographed register. Consumption is calculated by the API. No current tariff file provides a verified threshold, so the gauge is not shown. See [docs/METER_CAPTURE_CLIFF_GUARD.md](docs/METER_CAPTURE_CLIFF_GUARD.md).
 - Forecast at `/prediction`. It estimates cycle use from confirmed checkpoints when seven days of history and an explicit cycle start exist. The household budget stays in this browser. A payable rupee total is not calculated. See [docs/PREDICTION_BUDGET_INTELLIGENCE.md](docs/PREDICTION_BUDGET_INTELLIGENCE.md).
 - Action Plan at `/action-plan`. Appliance use and what-if schedules are calculated by the API. Records stay in this browser. Rupee savings are not shown. See [docs/APPLIANCE_ACTION_PLAN.md](docs/APPLIANCE_ACTION_PLAN.md).
+- History at `/history`. Confirmed checkpoints become measured cycles. A saved forecast can be compared with a finished cycle. Records stay in this browser. Rupee savings are not shown. See [docs/HISTORY_INSIGHTS_SAVINGS.md](docs/HISTORY_INSIGHTS_SAVINGS.md).
 - Placeholder pages for Action Plan and Consumption History. They describe the later work and do not show figures.
 - Reusable interface components, including trust and risk indicators.
 - FastAPI process health, environment-based CORS, and tests.
@@ -156,6 +157,7 @@ The stage order is written in [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROA
 - [Meter capture and Cliff Guard](docs/METER_CAPTURE_CLIFF_GUARD.md)
 - [Prediction and budget intelligence](docs/PREDICTION_BUDGET_INTELLIGENCE.md)
 - [Appliance action plan](docs/APPLIANCE_ACTION_PLAN.md)
+- [History, insights, and savings measurement](docs/HISTORY_INSIGHTS_SAVINGS.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
 - [Development roadmap](docs/DEVELOPMENT_ROADMAP.md)
 - [Engineering brief](AGENTS.md)

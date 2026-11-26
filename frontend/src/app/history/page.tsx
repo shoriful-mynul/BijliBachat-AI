@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FeaturePlaceholder } from "@/components/layout/feature-placeholder";
+import { HistoryView } from "@/features/history/history-view";
 import { navigationItem } from "@/lib/navigation";
 
 const page = navigationItem("/history");
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function HistoryPage() {
-  return <FeaturePlaceholder item={page} />;
+  return <HistoryView />;
 }
