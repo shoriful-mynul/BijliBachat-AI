@@ -33,11 +33,11 @@ frontend/          Next.js application
   src/styles/      Blue Hour tokens
   src/types/       Shared TypeScript types
 backend/
-  app/api/         HTTP routes
+  app/api/         HTTP routes and the public error response
   app/core/        Environment configuration
-  app/schemas/     Response models
-  app/services/    Health report
-  tests/           API tests
+  app/schemas/     Health, household, meter, trust, and error contracts
+  app/services/    Health report. Future calculations stay here
+  tests/           Contract, config, and API tests
 docs/              Architecture, design system, roadmap
 .cursor/rules/     Permanent engineering and design rules
 ```
@@ -101,6 +101,8 @@ source .venv/bin/activate
 pytest
 ```
 
+The dev extra installs `httpx2`, which is what this version of Starlette's `TestClient` imports. The older `httpx` package still runs the client, and Starlette warns that path is deprecated.
+
 `status: "ok"` means the API process handled the request. The payload also says that Firebase, Gemini, and the tariff file are not connected.
 
 ## Environment configuration
@@ -123,6 +125,7 @@ Done in this version:
 - Placeholder pages for Cliff Guard, Bill Auditor, Meter Readings, Action Plan, and Consumption History. They describe the later work and do not show figures.
 - Reusable interface components, including trust and risk indicators.
 - FastAPI process health, environment-based CORS, and tests.
+- Backend contracts for a household profile, a meter checkpoint, trust labels, decimal amounts, and a public error body. No route accepts those records yet.
 
 Not done:
 

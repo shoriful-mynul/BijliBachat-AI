@@ -19,15 +19,40 @@ The root layout stays statically renderable. Theme preference and the collapsed 
 
 ## Backend
 
-The backend is a FastAPI application in `backend/`.
+The backend is a FastAPI application in `backend/`. `create_app()` builds the process, stores settings on `app.state`, and attaches CORS. Origins must be explicit `http` or `https` URLs. A wildcard is a startup error. Settings do not read API keys. None are used.
 
-- `app/main.py` builds the app, stores settings on `app.state`, and attaches CORS.
-- `app/core/config.py` reads `APP_ENV` and `CORS_ORIGINS`. Origins must be explicit `http` or `https` URLs. A wildcard is a startup error.
-- `app/api/routes/health.py` exposes `GET /api/health`.
-- `app/services/health.py` builds a truthful report: the process is running, and Firebase, Gemini, and tariff configuration are `not_configured`.
-- `app/schemas/health.py` is the response contract.
+`GET /api/health` is unchanged. `status: "ok"` means the process handled the request. Firebase, Gemini, and tariff configuration stay `not_configured`. The frontend checks that JSON shape before showing it.
 
-No database, queue, or external client is created.
+### Responsibilities
+
+- `app/api/` receives HTTP, returns the health report, and maps an unexpected failure to the public error body. Routes do not calculate a bill and do not open a database.
+- `app/core/` holds environment settings.
+- `app/schemas/` holds the contracts: health, household profile, meter checkpoint, trust status, decimal amounts, and `ErrorResponse`.
+- `app/services/` holds application logic. The health report lives here. Future tariff and money calculations belong here too, and they must not import a database client.
+- `tests/` covers the health route, CORS, settings, and the new contracts.
+
+There is no `repositories/` package and no `integrations/` package yet. Empty folders would look like storage that does not exist.
+
+### Contracts
+
+Household and meter models describe records a later stage can store. No route accepts them, and nothing writes them.
+
+- Identifiers are UUIDs.
+- Timestamps must include a timezone. The models store them as UTC.
+- Kilowatt-hour and rupee amounts are `Decimal`. JSON sends them as strings. Binary floats and scientific notation are rejected. A fractional JSON number is a float after parsing, so it is rejected too. Whole numbers are accepted.
+- Trust status is exactly `Verified`, `Calculated`, `Extracted`, `Estimated`, or `Unavailable`.
+- A household has a display name, an open provider code, an optional city or service area, and two timestamps. It has no street address, national ID, meter account number, or protected-consumer flag. The provider code is not a fixed list of companies.
+- A meter checkpoint has a register value, a timestamp, `manual` or `photo`, and an explicit confirmation state: `pending_confirmation` or `confirmed`. Nothing fills that state in. A photo extraction is not confirmed unless the caller says so. The optional source is a short label, not a file or an OCR payload.
+- `ErrorResponse` is `code` plus `message`. Unexpected server errors use it and omit the exception text. FastAPI field errors stay a `detail` list, with a location and a message for each field.
+
+### Where later integrations go
+
+- Persistence, when a stage asks for it, goes in `app/repositories/`. Services call that boundary. Routes do not.
+- Firebase Authentication, Cloud Firestore, and Firebase Storage, when a stage asks for them, go in `app/integrations/firebase/`. The app does not import or initialize them now.
+- Gemini, when a stage asks for it, goes in `app/integrations/gemini/`. It may extract text. It does not calculate money, and it does not overwrite a Python result.
+- Dated tariff files and the calculation engine belong to later stages. They are not represented by sample rates in this code.
+
+No database client, queue, or external SDK is created.
 
 ## Planned data flow
 
@@ -44,9 +69,11 @@ Gemini, once added, may return text and extracted fields. Uncertain fields stay 
 
 ## What this version deliberately leaves open
 
-- There is no household identity beyond a labeled sample profile.
-- There is no tariff file format yet. The health check records that none is loaded, so a later stage can add `backend` configuration without pretending a rule already exists.
+- The browser still shows a labeled sample household. The API does not register or store one.
+- There is no tariff file and no rate table. The health check records that none is loaded.
+- Household and meter contracts are validated in tests. They are not HTTP endpoints.
 - There is no shared generated client. The frontend type for the health payload is hand-written and checked at runtime. A generator can wait until the API has more than one resource.
+- The demo trust chips use lowercase keys (`verified`, `calculated`, and the rest). The API contract uses the labels `Verified`, `Calculated`, `Extracted`, `Estimated`, and `Unavailable`. The chips are local sample UI. They do not read the API contract yet.
 
 ## Trust boundaries
 
@@ -54,6 +81,6 @@ Gemini, once added, may return text and extracted fields. Uncertain fields stay 
 | --- | --- | --- |
 | Layout, theme, sample copy | Frontend | Frontend |
 | Process health | FastAPI | FastAPI |
-| Tariff rates and bill maths | Not implemented | Python only |
-| OCR and explanation | Not implemented | Gemini, with human confirmation |
-| Stored households | Not implemented | Firestore, after authentication |
+| Tariff rates and bill maths | Not implemented. Python services will own them | Python only, in `app/services/` |
+| OCR and explanation | Not implemented | Gemini, in `app/integrations/gemini/`, with human confirmation |
+| Stored households and photos | Not implemented. Contracts exist; nothing is saved | Firestore and Storage, behind `app/repositories/` |
