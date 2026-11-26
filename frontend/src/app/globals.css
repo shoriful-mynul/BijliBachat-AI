@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-sidebar: var(--sidebar);
+  --color-raised: var(--raised);
+  --color-ice: var(--ice);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-aqua: #42c8e8;
+  --color-teal: #28c5b0;
+  --color-mint: #8be0b0;
+  --color-lime: #c7e86b;
+  --color-lavender: #b9aeff;
+  --color-amber: #ffc36b;
+  --color-coral: #ff7d83;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-urdu: var(--font-nastaliq), "Noto Nastaliq Urdu", serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+:where(a, button, input, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid #42c8e8;
+  outline-offset: 2px;
+}
+
+::selection {
+  background: #42c8e8;
+  color: #0b1e33;
+}
+
+[data-surface="ice"] {
+  background: #dcecf3;
+  color: #0b1e33;
+}
+
+[data-surface="ice"] .ice-muted {
+  color: var(--ice-muted);
+}
+
+[data-theme="dark"] .icon-when-dark,
+[data-theme="light"] .icon-when-light {
+  display: block;
+}
+
+[data-theme="dark"] .icon-when-light,
+[data-theme="light"] .icon-when-dark {
+  display: none;
+}
+
+.surface {
+  box-shadow: var(--shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

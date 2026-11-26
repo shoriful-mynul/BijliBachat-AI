@@ -1,0 +1,20 @@
+---
+description: Permanent calculation, trust, and safety rules for BijliBachat AI
+alwaysApply: true
+---
+
+# BijliBachat AI engineering principles
+
+Python is the sole authority for electricity tariff calculations and financial calculations. The frontend may format a number it was given. It may not compute a bill, a slab, a saving, or a forecast.
+
+Gemini is restricted to OCR, structured extraction, and natural-language explanations. Never allow Gemini to invent tariff rates, calculate bills, or modify calculated numbers.
+
+All tariff thresholds and protected or non-protected rules must come from verified, dated configuration files. Never hardcode a universal 200-unit rule. Never display an unverified tariff threshold as a fact.
+
+Manual meter readings and photo checkpoints are not real-time monitoring. Uncertain OCR fields require human confirmation.
+
+Every important number must communicate its trust status: Verified, Calculated, Extracted, Estimated, or Unavailable. Risk indicators use color, an icon, and a word: Safe, Approaching, High risk, or Needs verification.
+
+Never invent prediction accuracy, household savings, or social-impact statistics. Clearly distinguish demo data from real user data. Use "Possible mismatch", never "fraud".
+
+Never expose secrets or API keys in frontend code. Validate all external and user-provided data. Preserve accessibility and responsive behavior, including a 48px minimum touch target.

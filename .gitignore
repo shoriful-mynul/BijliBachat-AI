@@ -1,0 +1,33 @@
+# Secrets and local environment
+.env
+.env.local
+.env.*.local
+**/.env
+!**/.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Node and Next.js
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+*.tsbuildinfo
+
+# OS and editors
+.DS_Store
+.idea/
+.vscode/
+*.pem
+*.log
